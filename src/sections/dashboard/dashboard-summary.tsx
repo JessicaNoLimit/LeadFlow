@@ -1,6 +1,4 @@
-import type { Database } from "@/lib/supabase/types";
-
-type Lead = Database["public"]["Tables"]["leads"]["Row"];
+import type { Lead } from "@/lib/dashboard";
 
 type DashboardSummaryProps = {
   leads: Lead[];
