@@ -26,6 +26,55 @@ function resolveLeadId(id: string) {
   return id.trim();
 }
 
+export async function GET(_request: Request, context: RouteContext) {
+  const { id } = await context.params;
+  const leadId = resolveLeadId(id);
+
+  if (!leadId) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "El id del lead es obligatorio.",
+      },
+      { status: 400 },
+    );
+  }
+
+  const supabase = createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("leads")
+    .select("*")
+    .eq("id", leadId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Failed to fetch lead", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "No se pudo obtener el lead",
+      },
+      { status: 500 },
+    );
+  }
+
+  if (!data) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Lead no encontrado",
+      },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    lead: data,
+  });
+}
+
 export async function PATCH(request: Request, context: RouteContext) {
   const { id } = await context.params;
   const leadId = resolveLeadId(id);
