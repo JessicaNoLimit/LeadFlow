@@ -44,9 +44,11 @@ export function DashboardLeadsList({ leads }: DashboardLeadsListProps) {
         <p className="text-[0.68rem] uppercase tracking-[0.3em] text-sand">
           Leads
         </p>
+
         <h2 className="mt-4 font-heading text-3xl text-ivory">
           Todavia no hay solicitudes registradas.
         </h2>
+
         <p className="mt-4 max-w-2xl text-sm leading-7 text-mist/76">
           Cuando entren nuevas solicitudes desde la web publica, apareceran aqui
           ordenadas por fecha de creacion.
@@ -62,36 +64,33 @@ export function DashboardLeadsList({ leads }: DashboardLeadsListProps) {
           <p className="text-[0.68rem] uppercase tracking-[0.3em] text-sand">
             Leads
           </p>
+
           <h2 className="mt-3 font-heading text-3xl text-ivory">
             Solicitudes recibidas
           </h2>
         </div>
+
         <p className="text-sm leading-7 text-mist/72">
-<<<<<<< HEAD
           Abre cada lead para revisar los datos y gestionar su estado.
-=======
+          <br />
           Listado real consumido desde la API interna de LeadFlow.
->>>>>>> main
         </p>
       </div>
 
       <div className="mt-8 grid gap-4">
         {leads.map((lead) => (
-<<<<<<< HEAD
           <Link
             key={lead.id}
             href={`/dashboard/leads/${lead.id}`}
-            className="rounded-[1.5rem] border border-white/10 bg-black/18 p-5 transition hover:border-sand/50 hover:bg-black/26"
-=======
-          <article
-            key={lead.id}
-            className="rounded-[1.5rem] border border-white/10 bg-black/18 p-5"
->>>>>>> main
+            className="block rounded-[1.5rem] border border-white/10 bg-black/18 p-5 transition hover:border-sand/50 hover:bg-black/26"
           >
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h3 className="font-heading text-2xl text-ivory">{lead.nombre}</h3>
+                  <h3 className="font-heading text-2xl text-ivory">
+                    {lead.nombre}
+                  </h3>
+
                   <span
                     className={`rounded-full border px-3 py-1 text-[0.68rem] uppercase tracking-[0.22em] ${getStatusClassName(
                       lead.estado,
@@ -100,6 +99,7 @@ export function DashboardLeadsList({ leads }: DashboardLeadsListProps) {
                     {lead.estado.replaceAll("_", " ")}
                   </span>
                 </div>
+
                 <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm text-mist/80">
                   <p>{lead.email}</p>
                   <p>{lead.telefono || "Sin telefono"}</p>
@@ -112,20 +112,31 @@ export function DashboardLeadsList({ leads }: DashboardLeadsListProps) {
                   <p className="text-[0.68rem] uppercase tracking-[0.22em] text-mist/62">
                     Presupuesto
                   </p>
-                  <p className="mt-1 text-ivory">{lead.presupuesto || "No indicado"}</p>
+
+                  <p className="mt-1 text-ivory">
+                    {lead.presupuesto || "No indicado"}
+                  </p>
                 </div>
+
                 <div>
                   <p className="text-[0.68rem] uppercase tracking-[0.22em] text-mist/62">
                     Prioridad
                   </p>
-                  <p className={`mt-1 uppercase tracking-[0.18em] ${getPriorityClassName(lead.prioridad)}`}>
+
+                  <p
+                    className={`mt-1 uppercase tracking-[0.18em] ${getPriorityClassName(
+                      lead.prioridad,
+                    )}`}
+                  >
                     {lead.prioridad}
                   </p>
                 </div>
+
                 <div>
                   <p className="text-[0.68rem] uppercase tracking-[0.22em] text-mist/62">
                     Creado
                   </p>
+
                   <p className="mt-1 text-ivory">
                     {dateFormatter.format(new Date(lead.created_at))}
                   </p>
