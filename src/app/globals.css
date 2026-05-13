@@ -1,0 +1,48 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+
+@theme inline {
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-ivory: var(--color-ivory);
+  --color-mist: var(--color-mist);
+  --color-stone: var(--color-stone);
+  --color-sand: var(--color-sand);
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--color-ink);
+}
+
+body {
+  margin: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 248, 239, 0.04) 0%, rgba(9, 9, 9, 0) 16%),
+    var(--color-ink);
+  color: var(--color-ivory);
+  font-family: var(--font-sans), sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(215, 198, 168, 0.32);
+  color: var(--color-ivory);
+}

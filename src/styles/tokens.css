@@ -1,0 +1,10 @@
+:root {
+  --color-ink: #0a0a0a;
+  --color-ink-soft: #151515;
+  --color-ivory: #f4efe8;
+  --color-mist: #c8c0b6;
+  --color-stone: #8d857d;
+  --color-sand: #d7c6a8;
+  --font-sans: "Avenir Next", "Segoe UI", "Helvetica Neue", Helvetica, sans-serif;
+  --font-heading: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+}
