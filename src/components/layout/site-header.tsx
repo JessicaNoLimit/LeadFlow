@@ -28,7 +28,7 @@ export function SiteHeader() {
         </nav>
 
         <Link
-          href="#contacto"
+          href="/contacto"
           className="rounded-full border border-white/12 px-4 py-2 text-[0.7rem] uppercase tracking-[0.22em] text-ivory transition hover:border-sand hover:text-sand"
         >
           Solicitar propuesta
