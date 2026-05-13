@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
+import { buildCreateLeadPayload } from "@/lib/leads";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { Database } from "@/lib/supabase/types";
-
-type LeadInsert = Database["public"]["Tables"]["leads"]["Insert"];
 
 type CreateLeadPayload = {
   nombre?: unknown;
@@ -15,65 +13,29 @@ type CreateLeadPayload = {
   mensaje?: unknown;
 };
 
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export async function GET() {
+  const supabase = createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("leads")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-function normalizeRequiredText(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
-}
+  if (error) {
+    console.error("Failed to fetch leads", error);
 
-function normalizeOptionalText(value: unknown) {
-  if (typeof value !== "string") {
-    return null;
+    return NextResponse.json(
+      {
+        success: false,
+        error: "No se pudieron obtener los leads",
+      },
+      { status: 500 },
+    );
   }
 
-  const normalizedValue = value.trim();
-  return normalizedValue.length > 0 ? normalizedValue : null;
-}
-
-function normalizeOptionalDate(value: unknown) {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  const normalizedValue = value.trim();
-
-  if (!normalizedValue) {
-    return null;
-  }
-
-  const isValidDate = /^\d{4}-\d{2}-\d{2}$/.test(normalizedValue);
-  return isValidDate ? normalizedValue : null;
-}
-
-function buildLeadPayload(payload: CreateLeadPayload): LeadInsert | null {
-  const nombre = normalizeRequiredText(payload.nombre);
-  const email = normalizeRequiredText(payload.email).toLowerCase();
-  const tipoSesion = normalizeRequiredText(payload.tipo_sesion);
-
-  if (!nombre) {
-    return null;
-  }
-
-  if (!emailPattern.test(email)) {
-    return null;
-  }
-
-  if (!tipoSesion) {
-    return null;
-  }
-
-  return {
-    nombre,
-    email,
-    telefono: normalizeOptionalText(payload.telefono),
-    tipo_sesion: tipoSesion,
-    fecha_evento: normalizeOptionalDate(payload.fecha_evento),
-    ubicacion: normalizeOptionalText(payload.ubicacion),
-    presupuesto: normalizeOptionalText(payload.presupuesto),
-    mensaje: normalizeOptionalText(payload.mensaje),
-    estado: "nuevo",
-    prioridad: "media",
-  };
+  return NextResponse.json({
+    success: true,
+    leads: data,
+  });
 }
 
 export async function POST(request: Request) {
@@ -91,7 +53,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const leadPayload = buildLeadPayload(payload);
+  const leadPayload = buildCreateLeadPayload(payload);
 
   if (!leadPayload) {
     return NextResponse.json(
