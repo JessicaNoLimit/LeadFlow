@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Container } from "@/components/ui/container";
 
 export function SiteFooter() {
@@ -7,14 +8,19 @@ export function SiteFooter() {
         <div className="max-w-md">
           <p className="font-heading text-2xl text-ivory">LeadFlow</p>
           <p className="mt-3 text-sm leading-7 text-mist/76">
-            Base frontend editorial preparada para evolucionar hacia una web pública
-            premium y un CRM privado de gestión de leads.
+            Base frontend editorial preparada para evolucionar hacia una web publica
+            premium y un CRM privado de gestion de leads.
           </p>
         </div>
 
         <div className="text-sm leading-7 text-mist/70 md:text-right">
           <p>Lorenzo Bellucci Studio</p>
-          <p>Milán · Destinos internacionales</p>
+          <p>Milan · Destinos internacionales</p>
+          <p className="mt-2">
+            <Link href="/login" className="transition hover:text-ivory">
+              CRM
+            </Link>
+          </p>
         </div>
       </Container>
     </footer>
