@@ -9,6 +9,7 @@ export default function DashboardLoading() {
           />
         ))}
       </div>
+
       <div className="h-72 animate-pulse rounded-[1.8rem] border border-white/10 bg-white/[0.04]" />
     </div>
   );

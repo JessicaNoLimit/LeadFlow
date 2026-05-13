@@ -67,16 +67,26 @@ export function DashboardLeadsList({ leads }: DashboardLeadsListProps) {
           </h2>
         </div>
         <p className="text-sm leading-7 text-mist/72">
+<<<<<<< HEAD
           Abre cada lead para revisar los datos y gestionar su estado.
+=======
+          Listado real consumido desde la API interna de LeadFlow.
+>>>>>>> main
         </p>
       </div>
 
       <div className="mt-8 grid gap-4">
         {leads.map((lead) => (
+<<<<<<< HEAD
           <Link
             key={lead.id}
             href={`/dashboard/leads/${lead.id}`}
             className="rounded-[1.5rem] border border-white/10 bg-black/18 p-5 transition hover:border-sand/50 hover:bg-black/26"
+=======
+          <article
+            key={lead.id}
+            className="rounded-[1.5rem] border border-white/10 bg-black/18 p-5"
+>>>>>>> main
           >
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div className="min-w-0">
