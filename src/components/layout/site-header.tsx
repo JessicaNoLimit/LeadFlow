@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { navigationItems } from "@/lib/navigation";
@@ -6,13 +7,17 @@ export function SiteHeader() {
   return (
     <header className="relative z-20 border-b border-white/8">
       <Container className="flex min-h-20 items-center justify-between gap-6">
-        <Link href="/" className="flex flex-col">
-          <span className="font-heading text-2xl tracking-[0.08em] text-ivory">
-            Lorenzo Bellucci
-          </span>
-          <span className="text-[0.65rem] uppercase tracking-[0.34em] text-mist/72">
-            Studio
-          </span>
+        <Link href="/" className="flex items-center">
+          <div className="relative h-12 w-[11.5rem] sm:h-14 sm:w-[13rem]">
+            <Image
+              src="/images/brand/bellucci-logo.png"
+              alt="Lorenzo Bellucci Studio"
+              fill
+              priority
+              sizes="(max-width: 640px) 184px, 208px"
+              className="object-contain object-left"
+            />
+          </div>
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">

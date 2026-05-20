@@ -1,8 +1,6 @@
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { DashboardLeadsList } from "@/sections/dashboard/dashboard-leads-list";
 import { DashboardSummary } from "@/sections/dashboard/dashboard-summary";
-import { createSupabaseServerAuthClient } from "@/lib/supabase/server-auth";
 import type { Database } from "@/lib/supabase/types";
 
 type Lead = Database["public"]["Tables"]["leads"]["Row"];
@@ -47,15 +45,6 @@ async function getDashboardLeads() {
 }
 
 export default async function DashboardPage() {
-  const supabase = await createSupabaseServerAuthClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
   let leads: Lead[] | null = null;
 
   try {
@@ -66,7 +55,7 @@ export default async function DashboardPage() {
 
   if (!leads) {
     return (
-      <section className="rounded-[1.8rem] border border-[#5a2f2f] bg-[#241515] p-8">
+      <section className="rounded-[2rem] border border-[#5a2f2f] bg-[#241515]/95 p-8 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
         <p className="text-[0.68rem] uppercase tracking-[0.3em] text-[#efc4c4]">
           Error de carga
         </p>
@@ -81,32 +70,43 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="grid gap-6">
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="rounded-[1.8rem] border border-white/10 bg-black/18 p-6 sm:p-8">
+    <div className="grid gap-6 lg:gap-7">
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+        <div className="rounded-[2rem] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.24)] sm:p-8 lg:p-9">
           <p className="text-[0.68rem] uppercase tracking-[0.3em] text-sand">
-            Sesion activa
+            Vista general
           </p>
-          <h2 className="mt-4 font-heading text-4xl text-ivory">
-            Bienvenido al entorno privado de LeadFlow.
-          </h2>
+          <h1 className="mt-4 max-w-3xl font-heading text-4xl text-ivory sm:text-5xl">
+            Panel privado para gestionar leads con una estructura clara y operativa.
+          </h1>
           <p className="mt-6 max-w-2xl text-base leading-8 text-mist sm:text-lg">
-            Ya puedes revisar los leads reales captados desde la web publica.
-            Esta base deja preparado el CRM para la siguiente fase operativa.
+            Supervisa captacion, seguimiento comercial y estado de presupuestos desde
+            un entorno independiente de la web publica.
           </p>
         </div>
 
-        <aside className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
-          <p className="text-[0.68rem] uppercase tracking-[0.3em] text-sand">
-            Usuario autenticado
-          </p>
-          <p className="mt-5 font-heading text-2xl text-ivory">
-            {user.email ?? "Sin email"}
-          </p>
-          <p className="mt-4 text-sm leading-7 text-mist/76">
-            El acceso a esta zona esta restringido a usuarios autenticados mediante
-            cookies de sesion gestionadas por Supabase SSR.
-          </p>
+        <aside className="grid gap-4 rounded-[2rem] border border-white/10 bg-black/22 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.24)] sm:grid-cols-2 xl:grid-cols-1">
+          <div>
+            <p className="text-[0.68rem] uppercase tracking-[0.3em] text-mist/58">
+              Lectura inmediata
+            </p>
+            <p className="mt-3 font-heading text-3xl text-ivory">
+              Prioriza revision, seguimiento y cierre sin salir del panel.
+            </p>
+            <p className="mt-3 text-sm leading-7 text-mist/72">
+              El resumen inferior concentra volumen, etapas clave y conversion para
+              decidir el siguiente movimiento comercial.
+            </p>
+          </div>
+          <div>
+            <p className="text-[0.68rem] uppercase tracking-[0.3em] text-mist/58">
+              Fuente
+            </p>
+            <p className="mt-3 text-lg text-ivory">Supabase + API interna</p>
+            <p className="mt-3 text-sm leading-7 text-mist/72">
+              Datos sincronizados desde el formulario publico sin mezclar shells.
+            </p>
+          </div>
         </aside>
       </section>
 

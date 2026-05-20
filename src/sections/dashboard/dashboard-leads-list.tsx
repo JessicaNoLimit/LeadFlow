@@ -1,3 +1,8 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { LeadsFilterPanel } from "@/components/dashboard/leads-filter-panel";
+import { LeadsTable } from "@/components/dashboard/leads-table";
 import type { Database } from "@/lib/supabase/types";
 
 type Lead = Database["public"]["Tables"]["leads"]["Row"];
@@ -6,58 +11,57 @@ type DashboardLeadsListProps = {
   leads: Lead[];
 };
 
-const dateFormatter = new Intl.DateTimeFormat("es-ES", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-});
-
-function getStatusClassName(status: string) {
-  switch (status) {
-    case "aceptado":
-      return "border-[#31553b] bg-[#142219] text-[#cde7d2]";
-    case "rechazado":
-      return "border-[#5a2f2f] bg-[#241515] text-[#efc4c4]";
-    case "presupuesto_enviado":
-      return "border-[#5f4a26] bg-[#241d13] text-[#f0dfbc]";
-    case "contactado":
-      return "border-[#2f4a5b] bg-[#131d24] text-[#c6dfec]";
-    default:
-      return "border-white/10 bg-white/[0.05] text-mist";
-  }
-}
-
-function getPriorityClassName(priority: string) {
-  switch (priority) {
-    case "alta":
-      return "text-[#efc4c4]";
-    case "baja":
-      return "text-[#c6dfec]";
-    default:
-      return "text-mist";
-  }
+function normalizeValue(value: string) {
+  return value.trim().toLocaleLowerCase("es-ES");
 }
 
 export function DashboardLeadsList({ leads }: DashboardLeadsListProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("todos");
+  const [priorityFilter, setPriorityFilter] = useState("todas");
+
+  const normalizedQuery = normalizeValue(searchQuery);
+  const hasActiveFilters =
+    normalizedQuery.length > 0 ||
+    statusFilter !== "todos" ||
+    priorityFilter !== "todas";
+
+  const filteredLeads = useMemo(() => {
+    return leads.filter((lead) => {
+      const matchesQuery =
+        normalizedQuery.length === 0 ||
+        normalizeValue(lead.nombre).includes(normalizedQuery) ||
+        normalizeValue(lead.email).includes(normalizedQuery);
+
+      const matchesStatus =
+        statusFilter === "todos" || lead.estado === statusFilter;
+
+      const matchesPriority =
+        priorityFilter === "todas" || lead.prioridad === priorityFilter;
+
+      return matchesQuery && matchesStatus && matchesPriority;
+    });
+  }, [leads, normalizedQuery, priorityFilter, statusFilter]);
+
   if (leads.length === 0) {
     return (
-      <section className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-8">
+      <section className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 shadow-[0_24px_70px_rgba(0,0,0,0.2)]">
         <p className="text-[0.68rem] uppercase tracking-[0.3em] text-sand">
           Leads
         </p>
         <h2 className="mt-4 font-heading text-3xl text-ivory">
-          Todavia no hay solicitudes registradas.
+          No hay solicitudes registradas todavia.
         </h2>
         <p className="mt-4 max-w-2xl text-sm leading-7 text-mist/76">
-          Cuando entren nuevas solicitudes desde la web publica, apareceran aqui
-          ordenadas por fecha de creacion.
+          Cuando lleguen nuevas consultas desde la web publica, apareceran aqui
+          listas para iniciar el seguimiento comercial.
         </p>
       </section>
     );
   }
 
   return (
-    <section className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6 sm:p-8">
+    <section className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.025))] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.2)] sm:p-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[0.68rem] uppercase tracking-[0.3em] text-sand">
@@ -72,59 +76,48 @@ export function DashboardLeadsList({ leads }: DashboardLeadsListProps) {
         </p>
       </div>
 
-      <div className="mt-8 grid gap-4">
-        {leads.map((lead) => (
-          <article
-            key={lead.id}
-            className="rounded-[1.5rem] border border-white/10 bg-black/18 p-5"
-          >
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h3 className="font-heading text-2xl text-ivory">{lead.nombre}</h3>
-                  <span
-                    className={`rounded-full border px-3 py-1 text-[0.68rem] uppercase tracking-[0.22em] ${getStatusClassName(
-                      lead.estado,
-                    )}`}
-                  >
-                    {lead.estado.replaceAll("_", " ")}
-                  </span>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm text-mist/80">
-                  <p>{lead.email}</p>
-                  <p>{lead.telefono || "Sin telefono"}</p>
-                  <p>{lead.tipo_sesion}</p>
-                </div>
-              </div>
+      <LeadsFilterPanel
+        searchQuery={searchQuery}
+        statusFilter={statusFilter}
+        priorityFilter={priorityFilter}
+        hasActiveFilters={hasActiveFilters}
+        onSearchChange={setSearchQuery}
+        onStatusChange={setStatusFilter}
+        onPriorityChange={setPriorityFilter}
+        onReset={() => {
+          setSearchQuery("");
+          setStatusFilter("todos");
+          setPriorityFilter("todas");
+        }}
+      />
 
-              <div className="grid gap-3 text-sm sm:grid-cols-3 xl:min-w-[26rem]">
-                <div>
-                  <p className="text-[0.68rem] uppercase tracking-[0.22em] text-mist/62">
-                    Presupuesto
-                  </p>
-                  <p className="mt-1 text-ivory">{lead.presupuesto || "No indicado"}</p>
-                </div>
-                <div>
-                  <p className="text-[0.68rem] uppercase tracking-[0.22em] text-mist/62">
-                    Prioridad
-                  </p>
-                  <p className={`mt-1 uppercase tracking-[0.18em] ${getPriorityClassName(lead.prioridad)}`}>
-                    {lead.prioridad}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[0.68rem] uppercase tracking-[0.22em] text-mist/62">
-                    Creado
-                  </p>
-                  <p className="mt-1 text-ivory">
-                    {dateFormatter.format(new Date(lead.created_at))}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </article>
-        ))}
+      <div className="mt-6 flex flex-col gap-2 border-b border-white/8 pb-5 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm leading-7 text-mist/74">
+          Mostrando {filteredLeads.length} de {leads.length} solicitudes
+        </p>
+        {hasActiveFilters ? (
+          <p className="text-[0.68rem] uppercase tracking-[0.24em] text-mist/52">
+            Filtros activos sobre nombre, email, estado y prioridad
+          </p>
+        ) : null}
       </div>
+
+      {filteredLeads.length === 0 ? (
+        <div className="mt-8 rounded-[1.6rem] border border-white/8 bg-black/18 p-8">
+          <p className="text-[0.68rem] uppercase tracking-[0.28em] text-sand">
+            Sin coincidencias
+          </p>
+          <h3 className="mt-4 font-heading text-3xl text-ivory">
+            No se encontraron leads con los filtros actuales.
+          </h3>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-mist/76">
+            Prueba a modificar la busqueda o limpiar los filtros para recuperar el
+            pipeline completo.
+          </p>
+        </div>
+      ) : (
+        <LeadsTable leads={filteredLeads} />
+      )}
     </section>
   );
 }
