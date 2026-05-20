@@ -46,3 +46,9 @@ select {
   background: rgba(215, 198, 168, 0.32);
   color: var(--color-ivory);
 }
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
