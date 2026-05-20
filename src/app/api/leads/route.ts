@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { buildCreateLeadPayload } from "@/lib/leads";
+import {
+  sendAdminLeadNotificationEmail,
+  sendLeadConfirmationEmail,
+} from "@/lib/resend";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type CreateLeadPayload = {
@@ -83,6 +87,27 @@ export async function POST(request: Request) {
       },
       { status: 500 },
     );
+  }
+
+  const emailTasks = [
+    sendLeadConfirmationEmail({
+      nombre: data.nombre,
+      email: data.email,
+      tipo_sesion: data.tipo_sesion,
+    }),
+    sendAdminLeadNotificationEmail({
+      nombre: data.nombre,
+      email: data.email,
+      tipo_sesion: data.tipo_sesion,
+    }),
+  ];
+
+  const emailResults = await Promise.allSettled(emailTasks);
+
+  for (const result of emailResults) {
+    if (result.status === "rejected") {
+      console.error("Failed to send lead email", result.reason);
+    }
   }
 
   return NextResponse.json(
