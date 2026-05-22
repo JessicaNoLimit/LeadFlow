@@ -60,6 +60,47 @@ export type Database = {
         };
         Relationships: [];
       };
+      presupuestos: {
+        Row: {
+          id: string;
+          lead_id: string | null;
+          titulo: string;
+          descripcion: string | null;
+          importe: number;
+          estado: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          lead_id?: string | null;
+          titulo: string;
+          descripcion?: string | null;
+          importe: number;
+          estado?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          lead_id?: string | null;
+          titulo?: string;
+          descripcion?: string | null;
+          importe?: number;
+          estado?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "presupuestos_lead_id_fkey";
+            columns: ["lead_id"];
+            isOneToOne: false;
+            referencedRelation: "leads";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

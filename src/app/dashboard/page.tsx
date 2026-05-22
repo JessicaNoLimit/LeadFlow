@@ -1,51 +1,10 @@
-import { headers } from "next/headers";
-import { DashboardLeadsList } from "@/sections/dashboard/dashboard-leads-list";
+import Link from "next/link";
+import { RecentLeads } from "@/sections/dashboard/recent-leads";
 import { DashboardSummary } from "@/sections/dashboard/dashboard-summary";
-import type { Database } from "@/lib/supabase/types";
-
-type Lead = Database["public"]["Tables"]["leads"]["Row"];
-
-type LeadsApiResponse =
-  | {
-      success: true;
-      leads: Lead[];
-    }
-  | {
-      success: false;
-      error: string;
-    };
-
-async function getBaseUrl() {
-  const headerStore = await headers();
-  const host = headerStore.get("x-forwarded-host") ?? headerStore.get("host");
-  const protocol = headerStore.get("x-forwarded-proto") ?? "http";
-
-  if (!host) {
-    throw new Error("Missing host header");
-  }
-
-  return `${protocol}://${host}`;
-}
-
-async function getDashboardLeads() {
-  const baseUrl = await getBaseUrl();
-  const response = await fetch(`${baseUrl}/api/leads`, {
-    cache: "no-store",
-  });
-
-  const result = (await response.json()) as LeadsApiResponse;
-
-  if (!response.ok || !result.success) {
-    throw new Error(
-      result.success ? "No se pudieron obtener los leads" : result.error,
-    );
-  }
-
-  return result.leads;
-}
+import { getDashboardLeads } from "@/lib/dashboard/get-dashboard-leads";
 
 export default async function DashboardPage() {
-  let leads: Lead[] | null = null;
+  let leads: Awaited<ReturnType<typeof getDashboardLeads>> | null = null;
 
   try {
     leads = await getDashboardLeads();
@@ -83,6 +42,14 @@ export default async function DashboardPage() {
             Supervisa captacion, seguimiento comercial y estado de presupuestos desde
             un entorno independiente de la web publica.
           </p>
+          <div className="mt-8">
+            <Link
+              href="/dashboard/leads"
+              className="inline-flex h-12 items-center justify-center rounded-2xl border border-sand/24 bg-sand/[0.08] px-5 text-[0.72rem] uppercase tracking-[0.22em] text-ivory transition hover:border-sand/40 hover:bg-sand/[0.12] hover:text-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/45"
+            >
+              Ver todos los leads
+            </Link>
+          </div>
         </div>
 
         <aside className="grid gap-4 rounded-[2rem] border border-white/10 bg-black/22 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.24)] sm:grid-cols-2 xl:grid-cols-1">
@@ -111,7 +78,7 @@ export default async function DashboardPage() {
       </section>
 
       <DashboardSummary leads={leads} />
-      <DashboardLeadsList leads={leads} />
+      <RecentLeads leads={leads} />
     </div>
   );
 }
