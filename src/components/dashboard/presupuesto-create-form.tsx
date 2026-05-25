@@ -21,6 +21,7 @@ type CreatePresupuestoResponse =
 
 type PresupuestoCreateFormProps = {
   leads: Lead[];
+  initialLeadId?: string;
 };
 
 const fieldClassName =
@@ -35,9 +36,13 @@ const statusLabels: Record<(typeof presupuestoStatuses)[number], string> = {
 
 export function PresupuestoCreateForm({
   leads,
+  initialLeadId,
 }: PresupuestoCreateFormProps) {
   const router = useRouter();
-  const [leadId, setLeadId] = useState("");
+  const hasInitialLead = Boolean(
+    initialLeadId && leads.some((lead) => lead.id === initialLeadId),
+  );
+  const [leadId, setLeadId] = useState(hasInitialLead ? initialLeadId : "");
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [importe, setImporte] = useState("");
@@ -79,7 +84,7 @@ export function PresupuestoCreateForm({
         return;
       }
 
-      setLeadId("");
+      setLeadId(hasInitialLead ? initialLeadId ?? "" : "");
       setTitulo("");
       setDescripcion("");
       setImporte("");
@@ -124,6 +129,11 @@ export function PresupuestoCreateForm({
           >
             Lead vinculado
           </label>
+          {hasInitialLead ? (
+            <p className="mt-2 text-sm leading-7 text-mist/72">
+              Estas creando este presupuesto desde la ficha de un lead. Puedes mantener la vinculacion o cambiarla.
+            </p>
+          ) : null}
           <select
             id="presupuesto-lead"
             value={leadId}

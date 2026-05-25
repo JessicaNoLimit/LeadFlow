@@ -100,15 +100,28 @@ export function PresupuestoDetailForm({
     setErrorMessage("");
 
     try {
-      await updatePresupuesto({
+      const updatedPresupuesto = await updatePresupuesto({
         titulo,
         descripcion,
         importe,
         estado,
       });
 
-      setSuccessMessage("Cambios guardados correctamente.");
-      showToast("Presupuesto actualizado correctamente.", "success");
+      const leadWasSynced =
+        Boolean(updatedPresupuesto.lead_id) &&
+        updatedPresupuesto.estado !== "borrador";
+
+      setSuccessMessage(
+        leadWasSynced
+          ? "Cambios guardados correctamente. El lead vinculado ha quedado sincronizado."
+          : "Cambios guardados correctamente.",
+      );
+      showToast(
+        leadWasSynced
+          ? "Presupuesto actualizado y lead sincronizado."
+          : "Presupuesto actualizado correctamente.",
+        "success",
+      );
       router.refresh();
     } catch (error) {
       const nextErrorMessage =
@@ -132,7 +145,12 @@ export function PresupuestoDetailForm({
     try {
       await updatePresupuesto({ estado: nextStatus });
       setSuccessMessage(`Estado actualizado a ${statusLabels[nextStatus].toLowerCase()}.`);
-      showToast("Estado del presupuesto actualizado.", "success");
+      showToast(
+        presupuesto.lead_id && nextStatus !== "borrador"
+          ? "Estado del presupuesto actualizado y lead sincronizado."
+          : "Estado del presupuesto actualizado.",
+        "success",
+      );
       router.refresh();
     } catch (error) {
       const nextErrorMessage =
@@ -172,8 +190,8 @@ export function PresupuestoDetailForm({
           ? (result.presupuesto.estado as (typeof presupuestoStatuses)[number])
           : "enviado",
       );
-      setSuccessMessage("Presupuesto enviado correctamente al cliente.");
-      showToast("Presupuesto enviado correctamente.", "success");
+      setSuccessMessage("Presupuesto enviado correctamente al cliente y lead sincronizado.");
+      showToast("Presupuesto enviado y lead sincronizado.", "success");
       router.refresh();
     } catch (error) {
       const nextErrorMessage =
