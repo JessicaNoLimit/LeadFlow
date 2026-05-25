@@ -72,7 +72,7 @@ export function DashboardLeadsList({ leads }: DashboardLeadsListProps) {
           </h2>
         </div>
         <p className="text-sm leading-7 text-mist/72">
-          Listado real consumido desde la API interna de LeadFlow.
+          Revisa el pipeline y avanza cada oportunidad con menos pasos.
         </p>
       </div>
 

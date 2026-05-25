@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import { showToast } from "@/lib/toast";
 
 type LeadFormValues = {
   nombre: string;
@@ -60,6 +61,7 @@ function fieldBaseClassName(hasError: boolean) {
 
 export function LeadForm() {
   const [values, setValues] = useState(initialValues);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionState, setSubmissionState] = useState<SubmissionState>({
     status: "idle",
@@ -68,7 +70,7 @@ export function LeadForm() {
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
 
   const errors = useMemo(() => {
-    const nextErrors: Partial<Record<keyof LeadFormValues, string>> = {};
+    const nextErrors: Partial<Record<keyof LeadFormValues | "privacyAccepted", string>> = {};
 
     if (!values.nombre.trim()) {
       nextErrors.nombre = "Introduce tu nombre.";
@@ -84,8 +86,20 @@ export function LeadForm() {
       nextErrors.tipo_sesion = "Selecciona el tipo de sesion.";
     }
 
+    if (!privacyAccepted) {
+      nextErrors.privacyAccepted =
+        "Debes aceptar el tratamiento de datos para enviar la solicitud.";
+    }
+
     return nextErrors;
-  }, [values]);
+  }, [privacyAccepted, values]);
+
+  const canSubmit =
+    values.nombre.trim().length > 0 &&
+    values.email.trim().length > 0 &&
+    values.tipo_sesion.trim().length > 0 &&
+    emailPattern.test(values.email.trim()) &&
+    privacyAccepted;
 
   function handleChange(
     event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -111,13 +125,23 @@ export function LeadForm() {
     }));
   }
 
+  function handlePrivacyChange(event: ChangeEvent<HTMLInputElement>) {
+    setPrivacyAccepted(event.target.checked);
+    setTouchedFields((currentFields) => ({
+      ...currentFields,
+      privacyAccepted: true,
+    }));
+    setSubmissionState({ status: "idle", message: null });
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const requiredFieldNames: Array<keyof LeadFormValues> = [
+    const requiredFieldNames: Array<keyof LeadFormValues | "privacyAccepted"> = [
       "nombre",
       "email",
       "tipo_sesion",
+      "privacyAccepted",
     ];
 
     setTouchedFields((currentFields) => ({
@@ -129,10 +153,14 @@ export function LeadForm() {
     }));
 
     if (Object.keys(errors).length > 0) {
+      const nextMessage = errors.privacyAccepted
+        ? "Debes aceptar el tratamiento de datos para enviar la solicitud."
+        : "Revisa los campos obligatorios antes de continuar.";
       setSubmissionState({
         status: "error",
-        message: "Revisa los campos obligatorios antes de continuar.",
+        message: nextMessage,
       });
+      showToast(nextMessage, "error");
       return;
     }
 
@@ -155,17 +183,23 @@ export function LeadForm() {
       }
 
       setValues(initialValues);
+      setPrivacyAccepted(false);
       setTouchedFields({});
       setSubmissionState({
         status: "success",
         message:
           "Hemos recibido tu solicitud. El estudio revisara los detalles y contactara contigo proximamente.",
       });
+      showToast(
+        "Hemos recibido tu solicitud. El estudio revisara los detalles y contactara contigo proximamente.",
+        "success",
+      );
     } catch {
       setSubmissionState({
         status: "error",
         message: "No se pudo enviar la solicitud. Intentalo de nuevo en unos minutos.",
       });
+      showToast("No se pudo enviar la solicitud. Intentalo de nuevo en unos minutos.", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -335,10 +369,42 @@ export function LeadForm() {
         />
       </div>
 
+      <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.02] p-5">
+        <label
+          htmlFor="privacyAccepted"
+          className="flex cursor-pointer items-start gap-4"
+        >
+          <input
+            id="privacyAccepted"
+            name="privacyAccepted"
+            type="checkbox"
+            checked={privacyAccepted}
+            onChange={handlePrivacyChange}
+            className="mt-1 h-5 w-5 rounded border border-white/20 bg-transparent accent-[#d7c6a8]"
+            disabled={isSubmitting}
+            aria-describedby="privacy-help"
+          />
+          <span>
+            <span className="block text-sm leading-7 text-ivory">
+              He leido y acepto el tratamiento de mis datos para que Lorenzo Bellucci Studio pueda responder a mi solicitud.
+            </span>
+            <span
+              id="privacy-help"
+              className="mt-2 block text-sm leading-7 text-mist/72"
+            >
+              Usaremos tus datos unicamente para gestionar esta consulta y responderte sobre la sesion solicitada.
+            </span>
+          </span>
+        </label>
+        {touchedFields.privacyAccepted && errors.privacyAccepted ? (
+          <p className="mt-3 text-sm text-[#d2917f]">{errors.privacyAccepted}</p>
+        ) : null}
+      </div>
+
       <div className="flex flex-col gap-4 border-t border-white/8 pt-6 sm:flex-row sm:items-center sm:justify-between">
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !canSubmit}
           className="inline-flex min-h-14 items-center justify-center rounded-full border border-sand bg-sand px-8 text-sm uppercase tracking-[0.18em] text-ink transition hover:bg-transparent hover:text-sand disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? "Enviando solicitud..." : "Solicitar propuesta"}

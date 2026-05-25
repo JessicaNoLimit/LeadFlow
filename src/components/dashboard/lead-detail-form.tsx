@@ -34,6 +34,15 @@ const statusLabels: Record<string, string> = {
   archivado: "Archivado",
 };
 
+const leadStatusOptions = [
+  "nuevo",
+  "presupuesto_enviado",
+  "contactado",
+  "aceptado",
+  "rechazado",
+  "archivado",
+] as const satisfies readonly (typeof leadStatuses)[number][];
+
 const priorityLabels: Record<string, string> = {
   baja: "Baja",
   media: "Media",
@@ -85,6 +94,7 @@ export function LeadDetailForm({ lead }: LeadDetailFormProps) {
       setInternalNotes(result.lead.notas_internas ?? "");
       setSuccessMessage("Cambios guardados correctamente.");
       showToast("Lead actualizado correctamente.", "success");
+      router.refresh();
     } catch {
       setErrorMessage("Se produjo un error inesperado al guardar.");
       showToast("No se pudieron guardar los cambios.", "error");
@@ -167,7 +177,7 @@ export function LeadDetailForm({ lead }: LeadDetailFormProps) {
             className={`${fieldClassName} appearance-none`}
             disabled={isSaving || isDeleting}
           >
-            {leadStatuses.map((option) => (
+            {leadStatusOptions.map((option) => (
               <option key={option} value={option} className="bg-[#141414]">
                 {statusLabels[option]}
               </option>

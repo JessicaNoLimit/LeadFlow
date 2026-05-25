@@ -24,6 +24,8 @@ type PresupuestoCreateFormProps = {
   initialLeadId?: string;
 };
 
+type PresupuestoSource = "lead" | "manual";
+
 const fieldClassName =
   "mt-2 w-full rounded-2xl border border-white/10 bg-black/22 px-4 py-3 text-sm text-ivory outline-none transition focus:border-sand/40 focus:bg-black/28";
 
@@ -42,7 +44,15 @@ export function PresupuestoCreateForm({
   const hasInitialLead = Boolean(
     initialLeadId && leads.some((lead) => lead.id === initialLeadId),
   );
+  const initialLead = hasInitialLead
+    ? leads.find((lead) => lead.id === initialLeadId) ?? null
+    : null;
+  const [source, setSource] = useState<PresupuestoSource>("lead");
   const [leadId, setLeadId] = useState(hasInitialLead ? initialLeadId : "");
+  const [clienteNombre, setClienteNombre] = useState("");
+  const [clienteEmail, setClienteEmail] = useState("");
+  const [clienteTelefono, setClienteTelefono] = useState("");
+  const [fechaEvento, setFechaEvento] = useState(initialLead?.fecha_evento ?? "");
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [importe, setImporte] = useState("");
@@ -65,7 +75,11 @@ export function PresupuestoCreateForm({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          lead_id: leadId,
+          lead_id: source === "lead" ? leadId : "",
+          cliente_nombre: source === "manual" ? clienteNombre : "",
+          cliente_email: source === "manual" ? clienteEmail : "",
+          cliente_telefono: source === "manual" ? clienteTelefono : "",
+          fecha_evento: fechaEvento,
           titulo,
           descripcion,
           importe,
@@ -84,7 +98,12 @@ export function PresupuestoCreateForm({
         return;
       }
 
+      setSource("lead");
       setLeadId(hasInitialLead ? initialLeadId ?? "" : "");
+      setClienteNombre("");
+      setClienteEmail("");
+      setClienteTelefono("");
+      setFechaEvento(initialLead?.fecha_evento ?? "");
       setTitulo("");
       setDescripcion("");
       setImporte("");
@@ -111,7 +130,7 @@ export function PresupuestoCreateForm({
             Nuevo presupuesto
           </p>
           <h2 className="mt-3 font-heading text-3xl text-ivory">
-            Crear propuesta manual
+            Crear nuevo presupuesto
           </h2>
         </div>
         {isSubmitting ? (
@@ -122,34 +141,166 @@ export function PresupuestoCreateForm({
       </div>
 
       <div className="mt-6 grid gap-5">
+        {hasInitialLead ? (
+          <div className="rounded-2xl border border-sand/18 bg-sand/[0.06] px-4 py-3 text-sm leading-7 text-mist/82">
+            Estas creando un presupuesto vinculado a este lead.
+          </div>
+        ) : null}
+
+        <div>
+          <label className="text-[0.68rem] uppercase tracking-[0.24em] text-mist/58">
+            Origen del presupuesto
+          </label>
+          <div className="mt-2 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => {
+                setSource("lead");
+                if (hasInitialLead) {
+                  setLeadId(initialLeadId ?? "");
+                  setFechaEvento(initialLead?.fecha_evento ?? "");
+                }
+              }}
+              disabled={isSubmitting}
+              className={`rounded-2xl border px-4 py-4 text-left transition ${
+                source === "lead"
+                  ? "border-sand/20 bg-sand/[0.08] text-ivory"
+                  : "border-white/10 bg-black/18 text-mist/78"
+              }`}
+            >
+              <p className="text-[0.68rem] uppercase tracking-[0.22em]">
+                Lead existente
+              </p>
+              <p className="mt-2 text-sm leading-7">
+                Vincula el presupuesto a una oportunidad ya registrada.
+              </p>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSource("manual");
+                setLeadId("");
+                setFechaEvento("");
+              }}
+              disabled={isSubmitting || hasInitialLead}
+              className={`rounded-2xl border px-4 py-4 text-left transition ${
+                source === "manual"
+                  ? "border-sand/20 bg-sand/[0.08] text-ivory"
+                  : "border-white/10 bg-black/18 text-mist/78"
+              } disabled:cursor-not-allowed disabled:opacity-60`}
+            >
+              <p className="text-[0.68rem] uppercase tracking-[0.22em]">
+                Cliente manual
+              </p>
+              <p className="mt-2 text-sm leading-7">
+                Usa cliente manual cuando el presupuesto no venga de una solicitud previa.
+              </p>
+            </button>
+          </div>
+        </div>
+
+        {source === "lead" ? (
+          <div>
+            <label
+              htmlFor="presupuesto-lead"
+              className="text-[0.68rem] uppercase tracking-[0.24em] text-mist/58"
+            >
+              Lead vinculado
+            </label>
+            <select
+              id="presupuesto-lead"
+              value={leadId}
+              onChange={(event) => {
+                const nextLeadId = event.target.value;
+                const selectedLead = leads.find((lead) => lead.id === nextLeadId);
+
+                setLeadId(nextLeadId);
+                setFechaEvento(selectedLead?.fecha_evento ?? "");
+              }}
+              className={`${fieldClassName} appearance-none`}
+              disabled={isSubmitting}
+            >
+              <option value="" className="bg-[#141414]">
+                Selecciona un lead
+              </option>
+              {leads.map((lead) => (
+                <option key={lead.id} value={lead.id} className="bg-[#141414]">
+                  {lead.nombre} · {lead.email}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor="presupuesto-cliente-nombre"
+                className="text-[0.68rem] uppercase tracking-[0.24em] text-mist/58"
+              >
+                Nombre del cliente
+              </label>
+              <input
+                id="presupuesto-cliente-nombre"
+                type="text"
+                value={clienteNombre}
+                onChange={(event) => setClienteNombre(event.target.value)}
+                className={fieldClassName}
+                placeholder="Nombre completo"
+                disabled={isSubmitting}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="presupuesto-cliente-email"
+                className="text-[0.68rem] uppercase tracking-[0.24em] text-mist/58"
+              >
+                Email del cliente
+              </label>
+              <input
+                id="presupuesto-cliente-email"
+                type="email"
+                value={clienteEmail}
+                onChange={(event) => setClienteEmail(event.target.value)}
+                className={fieldClassName}
+                placeholder="nombre@cliente.com"
+                disabled={isSubmitting}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label
+                htmlFor="presupuesto-cliente-telefono"
+                className="text-[0.68rem] uppercase tracking-[0.24em] text-mist/58"
+              >
+                Telefono del cliente
+              </label>
+              <input
+                id="presupuesto-cliente-telefono"
+                type="tel"
+                value={clienteTelefono}
+                onChange={(event) => setClienteTelefono(event.target.value)}
+                className={fieldClassName}
+                placeholder="+34 600 000 000"
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+        )}
+
         <div>
           <label
-            htmlFor="presupuesto-lead"
+            htmlFor="presupuesto-fecha-evento"
             className="text-[0.68rem] uppercase tracking-[0.24em] text-mist/58"
           >
-            Lead vinculado
+            Fecha prevista de la sesion
           </label>
-          {hasInitialLead ? (
-            <p className="mt-2 text-sm leading-7 text-mist/72">
-              Estas creando este presupuesto desde la ficha de un lead. Puedes mantener la vinculacion o cambiarla.
-            </p>
-          ) : null}
-          <select
-            id="presupuesto-lead"
-            value={leadId}
-            onChange={(event) => setLeadId(event.target.value)}
-            className={`${fieldClassName} appearance-none`}
+          <input
+            id="presupuesto-fecha-evento"
+            type="date"
+            value={fechaEvento}
+            onChange={(event) => setFechaEvento(event.target.value)}
+            className={fieldClassName}
             disabled={isSubmitting}
-          >
-            <option value="" className="bg-[#141414]">
-              Sin vinculacion
-            </option>
-            {leads.map((lead) => (
-              <option key={lead.id} value={lead.id} className="bg-[#141414]">
-                {lead.nombre} · {lead.email}
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         <div>

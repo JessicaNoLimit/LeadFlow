@@ -5,6 +5,10 @@ import type { Database } from "@/lib/supabase/types";
 
 type CreatePresupuestoRequest = {
   lead_id?: unknown;
+  cliente_nombre?: unknown;
+  cliente_email?: unknown;
+  cliente_telefono?: unknown;
+  fecha_evento?: unknown;
   titulo?: unknown;
   descripcion?: unknown;
   importe?: unknown;

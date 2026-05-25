@@ -70,6 +70,10 @@ export function PresupuestosList({
           const linkedLead = presupuesto.lead_id
             ? leadMap.get(presupuesto.lead_id) ?? null
             : null;
+          const clientName =
+            linkedLead?.nombre ?? presupuesto.cliente_nombre ?? "Cliente manual";
+          const clientEmail =
+            linkedLead?.email ?? presupuesto.cliente_email ?? "Email no indicado";
 
           return (
             <article
@@ -100,18 +104,29 @@ export function PresupuestosList({
               <div className="mt-5 grid gap-4 border-t border-white/8 pt-5 sm:grid-cols-3">
                 <div>
                   <p className="text-[0.68rem] uppercase tracking-[0.22em] text-mist/58">
-                    Lead vinculado
+                    Cliente
                   </p>
                   {linkedLead ? (
                     <Link
                       href={`/dashboard/leads/${linkedLead.id}`}
                       className="mt-2 inline-flex text-sm text-sand transition hover:text-ivory"
                     >
-                      {linkedLead.nombre}
+                      {clientName}
                     </Link>
                   ) : (
-                    <p className="mt-2 text-sm text-mist/72">Sin vinculacion</p>
+                    <div className="mt-2 grid gap-1">
+                      <p className="text-sm text-ivory">{clientName}</p>
+                      <p className="text-sm text-mist/72">{clientEmail}</p>
+                    </div>
                   )}
+                </div>
+                <div>
+                  <p className="text-[0.68rem] uppercase tracking-[0.22em] text-mist/58">
+                    Email
+                  </p>
+                  <p className="mt-2 text-sm text-ivory">
+                    {clientEmail}
+                  </p>
                 </div>
                 <div>
                   <p className="text-[0.68rem] uppercase tracking-[0.22em] text-mist/58">
@@ -119,14 +134,6 @@ export function PresupuestosList({
                   </p>
                   <p className="mt-2 text-sm text-ivory">
                     {formatDate(presupuesto.created_at)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[0.68rem] uppercase tracking-[0.22em] text-mist/58">
-                    Ultima actualizacion
-                  </p>
-                  <p className="mt-2 text-sm text-ivory">
-                    {formatDate(presupuesto.updated_at)}
                   </p>
                 </div>
               </div>

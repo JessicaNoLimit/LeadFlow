@@ -16,6 +16,7 @@ type UpdatePresupuestoRequest = {
   descripcion?: unknown;
   importe?: unknown;
   estado?: unknown;
+  fecha_evento?: unknown;
 };
 
 function resolvePresupuestoId(id: string) {

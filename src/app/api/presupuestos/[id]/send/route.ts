@@ -55,40 +55,38 @@ export async function POST(_request: Request, context: RouteContext) {
       { status: 404 },
     );
   }
+  let lead = null;
 
-  if (!presupuesto.lead_id) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Este presupuesto no tiene un lead vinculado.",
-      },
-      { status: 400 },
-    );
+  if (presupuesto.lead_id) {
+    const { data: linkedLead, error: leadError } = await supabase
+      .from("leads")
+      .select("*")
+      .eq("id", presupuesto.lead_id)
+      .maybeSingle();
+
+    if (leadError) {
+      console.error("Failed to fetch lead for presupuesto sending", leadError);
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No se pudo cargar el lead vinculado",
+        },
+        { status: 500 },
+      );
+    }
+
+    lead = linkedLead;
   }
 
-  const { data: lead, error: leadError } = await supabase
-    .from("leads")
-    .select("*")
-    .eq("id", presupuesto.lead_id)
-    .maybeSingle();
+  const clientEmail = lead?.email ?? presupuesto.cliente_email;
+  const clientName = lead?.nombre ?? presupuesto.cliente_nombre;
 
-  if (leadError) {
-    console.error("Failed to fetch lead for presupuesto sending", leadError);
-
+  if (!clientEmail || !clientName) {
     return NextResponse.json(
       {
         success: false,
-        error: "No se pudo cargar el lead vinculado",
-      },
-      { status: 500 },
-    );
-  }
-
-  if (!lead?.email) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Vincula este presupuesto a un lead con email para enviarlo.",
+        error: "Este presupuesto necesita un lead con email o un cliente manual para enviarse.",
       },
       { status: 400 },
     );
@@ -96,12 +94,12 @@ export async function POST(_request: Request, context: RouteContext) {
 
   try {
     await sendPresupuestoEmail({
-      clientEmail: lead.email,
-      clientName: lead.nombre,
+      clientEmail,
+      clientName,
       presupuestoTitle: presupuesto.titulo,
       presupuestoDescription: presupuesto.descripcion,
       presupuestoAmount: presupuesto.importe,
-      presupuestoStatus: presupuesto.estado,
+      fechaEvento: presupuesto.fecha_evento ?? lead?.fecha_evento ?? null,
     });
   } catch (error) {
     console.error("Failed to send presupuesto email", error);

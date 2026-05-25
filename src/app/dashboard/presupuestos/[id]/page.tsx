@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PresupuestoDetailForm } from "@/components/dashboard/presupuesto-detail-form";
 import { PresupuestoStatusBadge } from "@/components/dashboard/presupuesto-status-badge";
+import { PrintBudgetButton } from "@/components/dashboard/print-budget-button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 
@@ -22,6 +23,12 @@ const dateTimeFormatter = new Intl.DateTimeFormat("es-ES", {
   minute: "2-digit",
 });
 
+const dateFormatter = new Intl.DateTimeFormat("es-ES", {
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+});
+
 const currencyFormatter = new Intl.NumberFormat("es-ES", {
   style: "currency",
   currency: "EUR",
@@ -33,6 +40,14 @@ function formatDateTime(value: string | null) {
   }
 
   return dateTimeFormatter.format(new Date(value));
+}
+
+function formatDate(value: string | null) {
+  if (!value) {
+    return "No indicado";
+  }
+
+  return dateFormatter.format(new Date(value));
 }
 
 function renderValue(value: string | null) {
@@ -136,13 +151,18 @@ export default async function PresupuestoDetailPage({
   }
 
   const linkedLead = (await getLeadById(presupuesto.lead_id)) as Lead | null;
-  const clienteRelacionado = linkedLead?.nombre ?? "No indicado";
-  const emailRelacionado = linkedLead?.email ?? "No indicado";
+  const clienteRelacionado =
+    linkedLead?.nombre ?? presupuesto.cliente_nombre ?? "No indicado";
+  const emailRelacionado =
+    linkedLead?.email ?? presupuesto.cliente_email ?? "No indicado";
+  const telefonoRelacionado =
+    linkedLead?.telefono ?? presupuesto.cliente_telefono ?? "No indicado";
   const leadStatus = linkedLead?.estado?.replaceAll("_", " ") ?? "No indicado";
-  const canSendEmail = Boolean(linkedLead?.email);
+  const canSendEmail = Boolean(linkedLead?.email || presupuesto.cliente_email);
   const sendHint = canSendEmail
     ? undefined
-    : "Vincula este presupuesto a un lead con email para enviarlo.";
+    : "Vincula este presupuesto a un lead con email o indica un cliente manual para enviarlo.";
+  const fechaSesion = presupuesto.fecha_evento ? formatDate(presupuesto.fecha_evento) : null;
 
   return (
     <div className="grid gap-6 lg:gap-7">
@@ -159,9 +179,28 @@ export default async function PresupuestoDetailPage({
               Vista comercial preparada para revisar importe, contexto del cliente y
               siguiente accion sobre la propuesta.
             </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href="/dashboard/presupuestos"
+                className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] px-5 text-[0.72rem] uppercase tracking-[0.22em] text-ivory transition hover:border-sand/40 hover:text-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/45 print:hidden"
+              >
+                Volver a presupuestos
+              </Link>
+              {linkedLead ? (
+                <Link
+                  href={`/dashboard/leads/${linkedLead.id}`}
+                  className="inline-flex h-12 items-center justify-center rounded-2xl border border-sand/20 bg-sand/[0.08] px-5 text-[0.72rem] uppercase tracking-[0.22em] text-sand transition hover:border-sand/40 hover:bg-sand/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/45 print:hidden"
+                >
+                  Abrir lead
+                </Link>
+              ) : null}
+              <div className="print:hidden">
+                <PrintBudgetButton />
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 print:hidden">
             <PresupuestoStatusBadge status={presupuesto.estado} />
             <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[0.72rem] uppercase tracking-[0.22em] text-ivory">
               {currencyFormatter.format(presupuesto.importe)}
@@ -171,7 +210,7 @@ export default async function PresupuestoDetailPage({
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_380px]">
-        <div className="grid gap-6">
+        <div className="print-budget-content grid gap-6">
           <DetailCard eyebrow="Propuesta comercial" title="Presentacion para cliente">
             <div className="rounded-[1.7rem] border border-sand/16 bg-[linear-gradient(180deg,rgba(215,198,168,0.08),rgba(255,255,255,0.02))] p-6">
               <p className="text-[0.68rem] uppercase tracking-[0.3em] text-sand">
@@ -203,6 +242,14 @@ export default async function PresupuestoDetailPage({
                 </div>
                 <div className="rounded-2xl border border-white/8 bg-black/18 p-4">
                   <p className="text-[0.68rem] uppercase tracking-[0.22em] text-mist/56">
+                    Telefono
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-ivory">
+                    {telefonoRelacionado}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/8 bg-black/18 p-4">
+                  <p className="text-[0.68rem] uppercase tracking-[0.22em] text-mist/56">
                     Importe
                   </p>
                   <p className="mt-2 font-heading text-3xl text-ivory">
@@ -217,6 +264,14 @@ export default async function PresupuestoDetailPage({
                     {formatDateTime(presupuesto.created_at)}
                   </p>
                 </div>
+                {fechaSesion ? (
+                  <div className="rounded-2xl border border-white/8 bg-black/18 p-4">
+                    <p className="text-[0.68rem] uppercase tracking-[0.22em] text-mist/56">
+                      Fecha prevista de sesion
+                    </p>
+                    <p className="mt-2 text-sm leading-7 text-ivory">{fechaSesion}</p>
+                  </div>
+                ) : null}
               </div>
 
               <div className="mt-6 rounded-[1.5rem] border border-white/8 bg-black/18 p-5">
@@ -234,6 +289,12 @@ export default async function PresupuestoDetailPage({
                     La reserva queda confirmada tras aceptacion y contacto directo con el estudio.
                   </p>
                 </div>
+              </div>
+
+              <div className="mt-6 border-t border-white/8 pt-6">
+                <p className="text-sm leading-7 text-mist/82">
+                  Lorenzo Bellucci Studio
+                </p>
               </div>
             </div>
           </DetailCard>
@@ -253,6 +314,12 @@ export default async function PresupuestoDetailPage({
                 label="Fecha de creacion"
                 value={formatDateTime(presupuesto.created_at)}
               />
+              {fechaSesion ? (
+                <DetailItem
+                  label="Fecha prevista de sesion"
+                  value={fechaSesion}
+                />
+              ) : null}
               <DetailItem
                 label="Ultima actualizacion"
                 value={formatDateTime(presupuesto.updated_at)}
@@ -285,37 +352,48 @@ export default async function PresupuestoDetailPage({
               </div>
               <DetailItem label="Cliente relacionado" value={clienteRelacionado} />
               <DetailItem label="Email relacionado" value={emailRelacionado} />
+              <DetailItem label="Telefono relacionado" value={telefonoRelacionado} />
             </div>
           </DetailCard>
 
-          <DetailCard eyebrow="Pipeline" title="Lead vinculado">
+          <DetailCard eyebrow="Pipeline" title={linkedLead ? "Lead vinculado" : "Cliente manual"}>
             {linkedLead ? (
               <div className="grid gap-5 sm:grid-cols-2">
                 <DetailItem label="Nombre del lead" value={linkedLead.nombre} />
                 <DetailItem label="Estado actual del lead" value={leadStatus} />
                 <div className="sm:col-span-2">
-                  <Link
-                    href={`/dashboard/leads/${linkedLead.id}`}
-                    className="inline-flex items-center text-sm uppercase tracking-[0.22em] text-sand transition hover:text-ivory focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/45"
-                  >
-                    Abrir ficha del lead
-                  </Link>
+                  <div className="flex flex-wrap gap-3">
+                    <Link
+                      href={`/dashboard/leads/${linkedLead.id}`}
+                      className="inline-flex h-12 items-center justify-center rounded-2xl border border-sand/20 bg-sand/[0.08] px-5 text-[0.72rem] uppercase tracking-[0.22em] text-sand transition hover:border-sand/40 hover:bg-sand/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/45"
+                    >
+                      Abrir lead
+                    </Link>
+                    <Link
+                      href="/dashboard/presupuestos"
+                      className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] px-5 text-[0.72rem] uppercase tracking-[0.22em] text-ivory transition hover:border-sand/40 hover:text-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/45"
+                    >
+                      Volver a presupuestos
+                    </Link>
+                  </div>
                 </div>
               </div>
             ) : (
-              <p className="text-sm leading-7 text-mist/76">
-                Este presupuesto no esta vinculado a ningun lead.
-              </p>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <DetailItem label="Nombre del cliente" value={clienteRelacionado} />
+                <DetailItem label="Email del cliente" value={emailRelacionado} />
+                <DetailItem label="Telefono del cliente" value={telefonoRelacionado} />
+              </div>
             )}
           </DetailCard>
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid gap-6 print:hidden">
           <DetailCard eyebrow="Acciones" title="Atajos rapidos">
             <div className="grid gap-3">
-              {linkedLead?.email ? (
+              {emailRelacionado !== "No indicado" ? (
                 <QuickActionLink
-                  href={`mailto:${linkedLead.email}`}
+                  href={`mailto:${emailRelacionado}`}
                   label="Contactar por email"
                 />
               ) : (
@@ -337,24 +415,6 @@ export default async function PresupuestoDetailPage({
                   Ver lead relacionado
                 </Link>
               ) : null}
-            </div>
-          </DetailCard>
-
-          <DetailCard eyebrow="Operativo" title="Siguiente capa comercial">
-            <div className="grid gap-3">
-              <p className="text-sm leading-7 text-mist/78">
-                El modulo de presupuestos ya esta operativo y preparado para crecer
-                con nuevas salidas comerciales.
-              </p>
-              <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-mist/76">
-                Exportacion PDF
-              </div>
-              <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-mist/76">
-                Envio automatico
-              </div>
-              <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-mist/76">
-                Firma digital
-              </div>
             </div>
           </DetailCard>
 
