@@ -64,6 +64,10 @@ export type Database = {
         Row: {
           id: string;
           lead_id: string | null;
+          cliente_nombre: string | null;
+          cliente_email: string | null;
+          cliente_telefono: string | null;
+          fecha_evento: string | null;
           titulo: string;
           descripcion: string | null;
           importe: number;
@@ -74,6 +78,10 @@ export type Database = {
         Insert: {
           id?: string;
           lead_id?: string | null;
+          cliente_nombre?: string | null;
+          cliente_email?: string | null;
+          cliente_telefono?: string | null;
+          fecha_evento?: string | null;
           titulo: string;
           descripcion?: string | null;
           importe: number;
@@ -84,6 +92,10 @@ export type Database = {
         Update: {
           id?: string;
           lead_id?: string | null;
+          cliente_nombre?: string | null;
+          cliente_email?: string | null;
+          cliente_telefono?: string | null;
+          fecha_evento?: string | null;
           titulo?: string;
           descripcion?: string | null;
           importe?: number;

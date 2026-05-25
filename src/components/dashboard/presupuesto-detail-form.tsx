@@ -43,6 +43,7 @@ export function PresupuestoDetailForm({
   const [titulo, setTitulo] = useState(presupuesto.titulo);
   const [descripcion, setDescripcion] = useState(presupuesto.descripcion ?? "");
   const [importe, setImporte] = useState(String(presupuesto.importe));
+  const [fechaEvento, setFechaEvento] = useState(presupuesto.fecha_evento ?? "");
   const [estado, setEstado] =
     useState<(typeof presupuestoStatuses)[number]>(
       presupuestoStatuses.includes(
@@ -61,6 +62,7 @@ export function PresupuestoDetailForm({
     descripcion?: string;
     importe?: string;
     estado?: (typeof presupuestoStatuses)[number];
+    fecha_evento?: string;
   }) {
     const response = await fetch(`/api/presupuestos/${presupuesto.id}`, {
       method: "PATCH",
@@ -82,6 +84,7 @@ export function PresupuestoDetailForm({
     setTitulo(result.presupuesto.titulo);
     setDescripcion(result.presupuesto.descripcion ?? "");
     setImporte(String(result.presupuesto.importe));
+    setFechaEvento(result.presupuesto.fecha_evento ?? "");
     setEstado(
       presupuestoStatuses.includes(
         result.presupuesto.estado as (typeof presupuestoStatuses)[number],
@@ -105,6 +108,7 @@ export function PresupuestoDetailForm({
         descripcion,
         importe,
         estado,
+        fecha_evento: fechaEvento,
       });
 
       const leadWasSynced =
@@ -190,8 +194,18 @@ export function PresupuestoDetailForm({
           ? (result.presupuesto.estado as (typeof presupuestoStatuses)[number])
           : "enviado",
       );
-      setSuccessMessage("Presupuesto enviado correctamente al cliente y lead sincronizado.");
-      showToast("Presupuesto enviado y lead sincronizado.", "success");
+      const leadWasSynced = Boolean(result.presupuesto.lead_id);
+      setSuccessMessage(
+        leadWasSynced
+          ? "Presupuesto enviado correctamente al cliente y lead sincronizado."
+          : "Presupuesto enviado correctamente al cliente.",
+      );
+      showToast(
+        leadWasSynced
+          ? "Presupuesto enviado y lead sincronizado."
+          : "Presupuesto enviado correctamente.",
+        "success",
+      );
       router.refresh();
     } catch (error) {
       const nextErrorMessage =
@@ -296,6 +310,23 @@ export function PresupuestoDetailForm({
               step="0.01"
               value={importe}
               onChange={(event) => setImporte(event.target.value)}
+              className={fieldClassName}
+              disabled={isSaving || isSending}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="presupuesto-date"
+              className="text-[0.68rem] uppercase tracking-[0.24em] text-mist/58"
+            >
+              Fecha prevista de la sesion
+            </label>
+            <input
+              id="presupuesto-date"
+              type="date"
+              value={fechaEvento}
+              onChange={(event) => setFechaEvento(event.target.value)}
               className={fieldClassName}
               disabled={isSaving || isSending}
             />

@@ -1,4 +1,5 @@
 import {
+  isValidEmail,
   normalizeOptionalText,
   normalizeRequiredText,
 } from "@/lib/leads";
@@ -9,6 +10,10 @@ export type PresupuestoUpdate = Database["public"]["Tables"]["presupuestos"]["Up
 
 type CreatePresupuestoPayload = {
   lead_id?: unknown;
+  cliente_nombre?: unknown;
+  cliente_email?: unknown;
+  cliente_telefono?: unknown;
+  fecha_evento?: unknown;
   titulo?: unknown;
   descripcion?: unknown;
   importe?: unknown;
@@ -20,6 +25,7 @@ type UpdatePresupuestoPayload = {
   descripcion?: unknown;
   importe?: unknown;
   estado?: unknown;
+  fecha_evento?: unknown;
 };
 
 export const presupuestoStatuses = [
@@ -79,7 +85,22 @@ function normalizeImporte(value: unknown) {
     : null;
 }
 
+function normalizeOptionalDate(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalizedValue = value.trim();
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  return /^\d{4}-\d{2}-\d{2}$/.test(normalizedValue) ? normalizedValue : null;
+}
+
 export function buildCreatePresupuestoPayload(payload: CreatePresupuestoPayload) {
+  const leadId = normalizeOptionalUuid(payload.lead_id);
   const titulo = normalizeRequiredText(payload.titulo);
 
   if (!titulo) {
@@ -109,8 +130,41 @@ export function buildCreatePresupuestoPayload(payload: CreatePresupuestoPayload)
     return { error: "El lead_id debe ser un UUID valido o quedar vacio." } as const;
   }
 
+  const clienteNombre = normalizeRequiredText(payload.cliente_nombre);
+  const clienteEmail = normalizeRequiredText(payload.cliente_email).toLowerCase();
+  const clienteTelefono = normalizeOptionalText(payload.cliente_telefono);
+
+  if (
+    payload.fecha_evento !== undefined &&
+    typeof payload.fecha_evento === "string" &&
+    payload.fecha_evento.trim() &&
+    normalizeOptionalDate(payload.fecha_evento) === null
+  ) {
+    return { error: "La fecha prevista de la sesion no es valida." } as const;
+  }
+
+  const fechaEvento = normalizeOptionalDate(payload.fecha_evento);
+
+  if (!leadId) {
+    if (!clienteNombre && !clienteEmail) {
+      return { error: "Selecciona un lead existente o indica un cliente manual." } as const;
+    }
+
+    if (!clienteNombre) {
+      return { error: "Debes indicar el nombre del cliente manual." } as const;
+    }
+
+    if (!isValidEmail(clienteEmail)) {
+      return { error: "Debes indicar un email valido para el cliente manual." } as const;
+    }
+  }
+
   const nextPayload: PresupuestoInsert = {
-    lead_id: normalizeOptionalUuid(payload.lead_id),
+    lead_id: leadId,
+    cliente_nombre: leadId ? null : clienteNombre,
+    cliente_email: leadId ? null : clienteEmail,
+    cliente_telefono: leadId ? null : clienteTelefono,
+    fecha_evento: fechaEvento,
     titulo,
     descripcion: normalizeOptionalText(payload.descripcion),
     importe,
@@ -155,6 +209,18 @@ export function buildUpdatePresupuestoPayload(payload: UpdatePresupuestoPayload)
     }
 
     nextPayload.estado = estado;
+  }
+
+  if (payload.fecha_evento !== undefined) {
+    if (
+      typeof payload.fecha_evento === "string" &&
+      payload.fecha_evento.trim() &&
+      normalizeOptionalDate(payload.fecha_evento) === null
+    ) {
+      return { error: "La fecha prevista de la sesion no es valida." } as const;
+    }
+
+    nextPayload.fecha_evento = normalizeOptionalDate(payload.fecha_evento);
   }
 
   if (Object.keys(nextPayload).length === 0) {

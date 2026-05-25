@@ -1,7 +1,6 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { LeadDetailForm } from "@/components/dashboard/lead-detail-form";
-import { LeadPriorityBadge } from "@/components/dashboard/lead-priority-badge";
 import { LeadQuickActions } from "@/components/dashboard/lead-quick-actions";
 import { LeadStatusBadge } from "@/components/dashboard/lead-status-badge";
 import { PresupuestoStatusBadge } from "@/components/dashboard/presupuesto-status-badge";
@@ -11,19 +10,11 @@ import type { Database } from "@/lib/supabase/types";
 type Lead = Database["public"]["Tables"]["leads"]["Row"];
 type Presupuesto = Database["public"]["Tables"]["presupuestos"]["Row"];
 
-type LeadDetailPageProps = {
+type ClientDetailPageProps = {
   params: Promise<{
     id: string;
   }>;
 };
-
-const commercialFlowSteps = [
-  { key: "nuevo", label: "Nuevo" },
-  { key: "presupuesto_enviado", label: "Presupuesto enviado" },
-  { key: "contactado", label: "Contactado" },
-  { key: "aceptado", label: "Aceptado" },
-  { key: "rechazado", label: "Rechazado" },
-] as const;
 
 const dateFormatter = new Intl.DateTimeFormat("es-ES", {
   day: "2-digit",
@@ -46,7 +37,7 @@ const currencyFormatter = new Intl.NumberFormat("es-ES", {
 
 function formatDate(value: string | null) {
   if (!value) {
-    return "No indicado";
+    return "No indicada";
   }
 
   return dateFormatter.format(new Date(value));
@@ -54,7 +45,7 @@ function formatDate(value: string | null) {
 
 function formatDateTime(value: string | null) {
   if (!value) {
-    return "No indicado";
+    return "No disponible";
   }
 
   return dateTimeFormatter.format(new Date(value));
@@ -64,20 +55,21 @@ function renderValue(value: string | null) {
   return value && value.trim().length > 0 ? value : "No indicado";
 }
 
-async function getLeadById(id: string) {
+async function getAcceptedLeadById(id: string) {
   const supabase = createSupabaseServerClient();
   const { data, error } = await supabase
     .from("leads")
     .select("*")
     .eq("id", id)
+    .eq("estado", "aceptado")
     .maybeSingle();
 
   if (error) {
-    console.error("Failed to load lead detail", error);
-    throw new Error("No se pudo cargar el lead");
+    console.error("Failed to load client detail", error);
+    throw new Error("No se pudo cargar la ficha del cliente");
   }
 
-  return data;
+  return data as Lead | null;
 }
 
 async function getPresupuestosByLeadId(leadId: string) {
@@ -89,8 +81,8 @@ async function getPresupuestosByLeadId(leadId: string) {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Failed to load lead presupuestos", error);
-    throw new Error("No se pudieron cargar los presupuestos del lead");
+    console.error("Failed to load client budget history", error);
+    throw new Error("No se pudo cargar el historial comercial");
   }
 
   return data as Presupuesto[];
@@ -103,7 +95,7 @@ function DetailCard({
 }: Readonly<{
   eyebrow: string;
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   return (
     <section className="rounded-[1.8rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.025))] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.18)] sm:p-7">
@@ -129,7 +121,7 @@ function DetailItem({
   );
 }
 
-function QuickActionLink({
+function ActionLink({
   href,
   label,
 }: Readonly<{
@@ -146,64 +138,17 @@ function QuickActionLink({
   );
 }
 
-function getLeadStepState(stepKey: (typeof commercialFlowSteps)[number]["key"], currentStatus: string) {
-  if (currentStatus === "archivado") {
-    return "pending";
-  }
-
-  if (currentStatus === "aceptado") {
-    if (stepKey === "aceptado") {
-      return "final-success";
-    }
-
-    return stepKey === "rechazado"
-      ? "pending"
-      : stepKey === "nuevo" || stepKey === "contactado" || stepKey === "presupuesto_enviado"
-        ? "complete"
-        : "pending";
-  }
-
-  if (currentStatus === "rechazado") {
-    if (stepKey === "rechazado") {
-      return "final-danger";
-    }
-
-    return stepKey === "aceptado"
-      ? "pending"
-      : stepKey === "nuevo" || stepKey === "contactado" || stepKey === "presupuesto_enviado"
-        ? "complete"
-        : "pending";
-  }
-
-  const currentIndex = commercialFlowSteps.findIndex((step) => step.key === currentStatus);
-  const stepIndex = commercialFlowSteps.findIndex((step) => step.key === stepKey);
-
-  if (currentIndex === -1 || stepIndex === -1) {
-    return "pending";
-  }
-
-  if (stepIndex < currentIndex) {
-    return "complete";
-  }
-
-  if (stepIndex === currentIndex) {
-    return "current";
-  }
-
-  return "pending";
-}
-
-export default async function LeadDetailPage({
+export default async function ClientDetailPage({
   params,
-}: LeadDetailPageProps) {
+}: ClientDetailPageProps) {
   const { id } = await params;
-  const lead = await getLeadById(id);
+  const client = await getAcceptedLeadById(id);
 
-  if (!lead) {
+  if (!client) {
     notFound();
   }
 
-  const presupuestos = await getPresupuestosByLeadId(lead.id);
+  const presupuestos = await getPresupuestosByLeadId(client.id);
 
   return (
     <div className="grid gap-6 lg:gap-7">
@@ -211,20 +156,22 @@ export default async function LeadDetailPage({
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <p className="text-[0.68rem] uppercase tracking-[0.3em] text-sand">
-              Ficha del lead
+              Ficha de cliente
             </p>
             <h1 className="mt-4 font-heading text-4xl text-ivory sm:text-5xl">
-              {lead.nombre}
+              {client.nombre}
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-8 text-mist sm:text-lg">
-              Consulta la informacion completa del cliente y registra el avance
-              comercial desde una unica vista operativa.
+              Consulta los datos confirmados del cliente y el historial comercial
+              vinculado desde una unica vista.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <LeadStatusBadge status={lead.estado} />
-            <LeadPriorityBadge priority={lead.prioridad} />
+            <LeadStatusBadge status={client.estado} />
+            <span className="rounded-full border border-[#4b6b57]/30 bg-[#102317]/70 px-4 py-2 text-[0.68rem] uppercase tracking-[0.22em] text-[#cde7d2]">
+              Cliente confirmado
+            </span>
           </div>
         </div>
       </section>
@@ -233,102 +180,43 @@ export default async function LeadDetailPage({
         <div className="grid gap-6">
           <DetailCard eyebrow="Cliente" title="Datos principales">
             <div className="grid gap-5 sm:grid-cols-2">
-              <DetailItem label="Nombre" value={lead.nombre} />
-              <DetailItem label="Email" value={lead.email} />
-              <DetailItem label="Telefono" value={renderValue(lead.telefono)} />
-              <DetailItem label="Creado" value={formatDateTime(lead.created_at)} />
-              <DetailItem label="Actualizado" value={formatDateTime(lead.updated_at)} />
+              <DetailItem label="Nombre" value={client.nombre} />
+              <DetailItem label="Email" value={client.email} />
+              <DetailItem label="Telefono" value={renderValue(client.telefono)} />
+              <DetailItem label="Estado actual" value={client.estado.replaceAll("_", " ")} />
+              <DetailItem label="Lead creado" value={formatDateTime(client.created_at)} />
+              <DetailItem label="Ultima actualizacion" value={formatDateTime(client.updated_at)} />
             </div>
           </DetailCard>
 
           <DetailCard eyebrow="Sesion" title="Detalles del encargo">
             <div className="grid gap-5 sm:grid-cols-2">
-              <DetailItem label="Tipo de sesion" value={lead.tipo_sesion} />
-              <DetailItem label="Fecha del evento" value={formatDate(lead.fecha_evento)} />
-              <DetailItem label="Ubicacion" value={renderValue(lead.ubicacion)} />
-              <DetailItem label="Presupuesto" value={renderValue(lead.presupuesto)} />
+              <DetailItem label="Tipo de sesion" value={client.tipo_sesion} />
+              <DetailItem label="Fecha del evento" value={formatDate(client.fecha_evento)} />
+              <DetailItem label="Ubicacion" value={renderValue(client.ubicacion)} />
+              <DetailItem label="Presupuesto orientativo" value={renderValue(client.presupuesto)} />
             </div>
           </DetailCard>
 
-          <DetailCard eyebrow="Mensaje" title="Solicitud recibida">
+          <DetailCard eyebrow="Solicitud original" title="Mensaje recibido">
             <p className="text-sm leading-8 text-mist/82">
-              {renderValue(lead.mensaje)}
+              {renderValue(client.mensaje)}
             </p>
           </DetailCard>
 
-          <DetailCard eyebrow="Pipeline" title="Flujo comercial">
-            <p className="text-sm leading-7 text-mist/76">
-              Este lead avanza desde la captacion inicial hasta el cierre comercial
-              segun el estado sincronizado dentro del CRM.
-            </p>
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-              {commercialFlowSteps.map((step) => {
-                const stepState = getLeadStepState(step.key, lead.estado);
-                const styles =
-                  stepState === "complete"
-                    ? "border-sand/24 bg-sand/[0.08] text-ivory"
-                    : stepState === "final-success"
-                      ? "border-[#4b6b57]/36 bg-[#102317]/78 text-[#d9efdd]"
-                      : stepState === "final-danger"
-                        ? "border-[#8f5959]/28 bg-[#241515]/72 text-[#f3d1d1]"
-                    : stepState === "current"
-                      ? "border-[#4b6b57]/30 bg-[#102317]/70 text-[#cde7d2]"
-                      : "border-white/8 bg-black/18 text-mist/68";
-
-                return (
-                  <div
-                    key={step.key}
-                    className={`rounded-[1.35rem] border px-4 py-4 transition ${styles}`}
-                  >
-                    <p className="text-[0.62rem] uppercase tracking-[0.22em]">
-                      {stepState === "current"
-                        ? "Actual"
-                        : stepState === "final-success"
-                          ? "Cierre positivo"
-                          : stepState === "final-danger"
-                            ? "Cierre negativo"
-                        : stepState === "complete"
-                          ? "Completado"
-                          : "Pendiente"}
-                    </p>
-                    <p className="mt-2 text-sm leading-6">{step.label}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </DetailCard>
-
-          <DetailCard eyebrow="Presupuestos" title="Presupuestos asociados">
-            <div id="presupuestos-asociados" />
-            <div className="flex flex-col gap-4 border-b border-white/8 pb-5 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm leading-7 text-mist/76">
-                {presupuestos.length} presupuesto{presupuestos.length === 1 ? "" : "s"} vinculado
-                {presupuestos.length === 1 ? "" : "s"} a este lead.
-              </p>
-              <Link
-                href={`/dashboard/presupuestos?leadId=${lead.id}`}
-                className="inline-flex h-12 items-center justify-center rounded-2xl border border-sand/24 bg-sand/[0.08] px-5 text-[0.72rem] uppercase tracking-[0.22em] text-ivory transition hover:border-sand/40 hover:bg-sand/[0.12] hover:text-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/45"
-              >
-                Crear presupuesto para este lead
-              </Link>
-            </div>
-
+          <div id="historial-comercial" />
+          <DetailCard eyebrow="Historial" title="Historial comercial">
             {presupuestos.length === 0 ? (
-              <div className="mt-6 rounded-[1.5rem] border border-white/8 bg-black/18 p-6">
+              <div className="rounded-[1.5rem] border border-white/8 bg-black/18 p-6">
                 <p className="text-[0.68rem] uppercase tracking-[0.24em] text-sand">
                   Sin presupuestos
                 </p>
                 <p className="mt-3 text-sm leading-7 text-mist/76">
-                  Todavia no hay presupuestos vinculados a este lead.
+                  Todavia no hay presupuestos asociados a este cliente.
                 </p>
               </div>
             ) : (
-              <div className="mt-6 grid gap-4">
-                <div className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm leading-7 text-mist/76">
-                  Los cambios de estado del presupuesto actualizan automaticamente el
-                  estado del lead vinculado.
-                </div>
+              <div className="grid gap-4">
                 {presupuestos.map((presupuesto) => (
                   <article
                     key={presupuesto.id}
@@ -373,45 +261,41 @@ export default async function LeadDetailPage({
         <div className="grid gap-6">
           <DetailCard eyebrow="Acciones" title="Acciones rapidas">
             <LeadQuickActions
-              leadId={lead.id}
-              status={lead.estado}
-              email={lead.email}
-              telefono={lead.telefono}
-              createPresupuestoHref={`/dashboard/presupuestos?leadId=${lead.id}`}
-              presupuestosHref="#presupuestos-asociados"
+              leadId={client.id}
+              status={client.estado}
+              email={client.email}
+              telefono={client.telefono}
+              createPresupuestoHref={`/dashboard/presupuestos?leadId=${client.id}`}
+              presupuestosHref="#historial-comercial"
               className="grid gap-3"
             />
 
             <div className="mt-3 grid gap-3">
-              <QuickActionLink href={`mailto:${lead.email}`} label="Enviar email" />
-              {lead.telefono ? (
-                <QuickActionLink href={`tel:${lead.telefono}`} label="Llamar" />
+              <ActionLink href={`mailto:${client.email}`} label="Enviar email" />
+              {client.telefono ? (
+                <ActionLink href={`tel:${client.telefono}`} label="Llamar" />
               ) : (
                 <span className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/8 bg-white/[0.02] px-5 text-[0.72rem] uppercase tracking-[0.22em] text-mist/44">
                   Llamada no disponible
                 </span>
               )}
               <Link
-                href="/dashboard"
+                href="/dashboard/clientes"
                 className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] px-5 text-[0.72rem] uppercase tracking-[0.22em] text-ivory transition hover:border-sand/40 hover:text-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/45"
               >
-                Volver al dashboard
+                Volver a clientes
               </Link>
             </div>
           </DetailCard>
 
-          <DetailCard eyebrow="Seguimiento" title="Contexto interno">
+          <DetailCard eyebrow="Relacion" title="Resumen del cliente">
             <div className="grid gap-5">
-              <DetailItem label="Estado actual" value={lead.estado.replaceAll("_", " ")} />
-              <DetailItem label="Prioridad actual" value={lead.prioridad} />
-              <DetailItem
-                label="Notas internas"
-                value={renderValue(lead.notas_internas)}
-              />
+              <DetailItem label="Estado confirmado" value={client.estado.replaceAll("_", " ")} />
+              <DetailItem label="Tipo de sesion" value={client.tipo_sesion} />
+              <DetailItem label="Fecha del evento" value={formatDate(client.fecha_evento)} />
+              <DetailItem label="Ubicacion" value={renderValue(client.ubicacion)} />
             </div>
           </DetailCard>
-
-          <LeadDetailForm lead={lead as Lead} />
         </div>
       </div>
     </div>

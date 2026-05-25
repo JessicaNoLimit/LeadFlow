@@ -41,7 +41,7 @@ export function DashboardSidebar() {
           Navegacion CRM
         </p>
         <p className="mt-3 text-sm leading-7 text-mist/72">
-          Espacio preparado para la operativa interna de LeadFlow.
+          Operativa comercial centralizada para el estudio.
         </p>
       </div>
 
@@ -76,7 +76,7 @@ export function DashboardSidebar() {
                     isActive ? "text-sand/70" : "text-mist/50"
                   }`}
                 >
-                  {isActive ? "Vista activa" : item.description}
+                  {isActive ? item.description : item.description}
                 </p>
               </div>
               <span
@@ -90,17 +90,6 @@ export function DashboardSidebar() {
           );
         })}
       </nav>
-
-      <div className="mt-4 rounded-[1.6rem] border border-white/8 bg-black/20 p-4 lg:mt-auto">
-        <p className="text-[0.62rem] uppercase tracking-[0.28em] text-mist/58">
-          Estado del workspace
-        </p>
-        <p className="mt-3 text-sm leading-7 text-mist/74">
-          Navegacion principal operativa. Presupuestos ya forma parte del flujo
-          comercial; clientes sigue preparado para la siguiente fase y configuracion
-          resume el contexto del workspace.
-        </p>
-      </div>
     </aside>
   );
 }

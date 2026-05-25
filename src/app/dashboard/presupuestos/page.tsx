@@ -144,37 +144,8 @@ export default async function DashboardPresupuestosPage({
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+      <section className="grid gap-6">
         <PresupuestoCreateForm leads={leads} initialLeadId={initialLeadId} />
-        <div className="rounded-[1.8rem] border border-white/10 bg-black/18 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.18)]">
-          <p className="text-[0.68rem] uppercase tracking-[0.3em] text-sand">
-            Flujo minimo
-          </p>
-          <h2 className="mt-3 font-heading text-3xl text-ivory">
-            Registro manual y seguimiento inicial
-          </h2>
-          {initialLeadId ? (
-            <div className="mt-4 rounded-2xl border border-sand/18 bg-sand/[0.06] px-4 py-3 text-sm leading-7 text-mist/82">
-              Estas creando un presupuesto vinculado a este lead.
-            </div>
-          ) : null}
-          <p className="mt-4 text-sm leading-7 text-mist/76">
-            Este MVP permite crear presupuestos reales en Supabase, asignarlos a un
-            lead de forma opcional y clasificarlos por estado sin introducir pasos
-            extra como PDF, email o pagos.
-          </p>
-          <div className="mt-6 grid gap-3">
-            <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-mist/78">
-              Los presupuestos aparecen ordenados por fecha de creacion.
-            </div>
-            <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-mist/78">
-              El lead vinculado es opcional para no bloquear propuestas manuales.
-            </div>
-            <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-mist/78">
-              El estado inicial recomendado es borrador y puede definirse al crear.
-            </div>
-          </div>
-        </div>
       </section>
 
       <PresupuestosList presupuestos={presupuestos} leads={leads} />
