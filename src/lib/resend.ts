@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-<<<<<<< HEAD
+
 type SendPresupuestoEmailInput = {
   clientEmail: string;
   clientName: string;
@@ -77,8 +77,10 @@ export async function sendPresupuestoEmail({
           </p>
         </div>
       </div>
-    `,
-=======
+        `,
+  });
+}
+
 const DEFAULT_FROM_EMAIL = "onboarding@resend.dev";
 
 function getResendClient() {
@@ -148,6 +150,5 @@ export async function sendAdminLeadNotificationEmail({
       `Email: ${email}`,
       `Tipo de sesion: ${tipoSesion}`,
     ].join("\n"),
->>>>>>> 4d8ed6c6a83d66b96084cfd82bf87891503fa505
   });
 }

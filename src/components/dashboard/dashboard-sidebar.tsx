@@ -17,7 +17,7 @@ const navigationItems = [
   {
     label: "Presupuestos",
     href: "/dashboard/presupuestos",
-    description: "Modulo en preparacion",
+    description: "Propuestas operativas",
   },
   {
     label: "Clientes",
@@ -96,8 +96,9 @@ export function DashboardSidebar() {
           Estado del workspace
         </p>
         <p className="mt-3 text-sm leading-7 text-mist/74">
-          Navegacion principal operativa. Presupuestos, clientes y configuracion
-          quedan preparados para crecer dentro del CRM.
+          Navegacion principal operativa. Presupuestos ya forma parte del flujo
+          comercial; clientes sigue preparado para la siguiente fase y configuracion
+          resume el contexto del workspace.
         </p>
       </div>
     </aside>

@@ -29,6 +29,12 @@ export const presupuestoStatuses = [
   "rechazado",
 ] as const;
 
+const presupuestoToLeadStatusMap = {
+  enviado: "presupuesto_enviado",
+  aceptado: "aceptado",
+  rechazado: "rechazado",
+} as const;
+
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -156,4 +162,12 @@ export function buildUpdatePresupuestoPayload(payload: UpdatePresupuestoPayload)
   }
 
   return { payload: nextPayload } as const;
+}
+
+export function getLeadStatusForPresupuestoStatus(
+  status: string,
+): "presupuesto_enviado" | "aceptado" | "rechazado" | null {
+  return presupuestoToLeadStatusMap[
+    status as keyof typeof presupuestoToLeadStatusMap
+  ] ?? null;
 }

@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { buildUpdatePresupuestoPayload } from "@/lib/presupuestos";
+import {
+  buildUpdatePresupuestoPayload,
+  getLeadStatusForPresupuestoStatus,
+} from "@/lib/presupuestos";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type RouteContext = {
@@ -87,6 +90,24 @@ export async function PATCH(request: Request, context: RouteContext) {
       },
       { status: 404 },
     );
+  }
+
+  const nextLeadStatus = getLeadStatusForPresupuestoStatus(data.estado);
+
+  if (data.lead_id && nextLeadStatus) {
+    const { error: leadUpdateError } = await supabase
+      .from("leads")
+      .update({ estado: nextLeadStatus })
+      .eq("id", data.lead_id);
+
+    if (leadUpdateError) {
+      console.error("Failed to sync lead status from presupuesto update", {
+        presupuestoId: data.id,
+        leadId: data.lead_id,
+        nextLeadStatus,
+        error: leadUpdateError,
+      });
+    }
   }
 
   return NextResponse.json({

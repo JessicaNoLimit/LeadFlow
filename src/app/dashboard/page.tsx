@@ -77,6 +77,42 @@ export default async function DashboardPage() {
         </aside>
       </section>
 
+      <section className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.025))] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.2)] sm:p-8">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-[0.68rem] uppercase tracking-[0.3em] text-sand">
+              Pipeline comercial
+            </p>
+            <h2 className="mt-3 font-heading text-3xl text-ivory sm:text-4xl">
+              Captacion → Seguimiento → Presupuesto → Cierre
+            </h2>
+          </div>
+          <p className="max-w-2xl text-sm leading-7 text-mist/74">
+            LeadFlow conecta la entrada desde la web, el seguimiento del estudio,
+            la propuesta comercial y el cierre de cada oportunidad dentro del mismo CRM.
+          </p>
+        </div>
+
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            "Captacion desde formulario publico y registro automatico en leads.",
+            "Seguimiento interno con estado, prioridad y notas del estudio.",
+            "Creacion y envio de presupuestos vinculados al lead correcto.",
+            "Cierre comercial visible cuando la propuesta se acepta o se rechaza.",
+          ].map((item, index) => (
+            <div
+              key={item}
+              className="rounded-[1.4rem] border border-white/8 bg-black/18 px-4 py-4 text-sm leading-7 text-mist/76"
+            >
+              <p className="text-[0.62rem] uppercase tracking-[0.24em] text-sand">
+                Paso {index + 1}
+              </p>
+              <p className="mt-2">{item}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <DashboardSummary leads={leads} />
       <RecentLeads leads={leads} />
     </div>

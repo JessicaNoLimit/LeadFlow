@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getLeadStatusForPresupuestoStatus } from "@/lib/presupuestos";
 import { sendPresupuestoEmail } from "@/lib/resend";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -131,6 +132,24 @@ export async function POST(_request: Request, context: RouteContext) {
       },
       { status: 500 },
     );
+  }
+
+  const nextLeadStatus = getLeadStatusForPresupuestoStatus("enviado");
+
+  if (updatedPresupuesto?.lead_id && nextLeadStatus) {
+    const { error: leadUpdateError } = await supabase
+      .from("leads")
+      .update({ estado: nextLeadStatus })
+      .eq("id", updatedPresupuesto.lead_id);
+
+    if (leadUpdateError) {
+      console.error("Failed to sync lead status after presupuesto send", {
+        presupuestoId: updatedPresupuesto.id,
+        leadId: updatedPresupuesto.lead_id,
+        nextLeadStatus,
+        error: leadUpdateError,
+      });
+    }
   }
 
   return NextResponse.json({

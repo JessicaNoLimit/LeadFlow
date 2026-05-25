@@ -138,6 +138,7 @@ export default async function PresupuestoDetailPage({
   const linkedLead = (await getLeadById(presupuesto.lead_id)) as Lead | null;
   const clienteRelacionado = linkedLead?.nombre ?? "No indicado";
   const emailRelacionado = linkedLead?.email ?? "No indicado";
+  const leadStatus = linkedLead?.estado?.replaceAll("_", " ") ?? "No indicado";
   const canSendEmail = Boolean(linkedLead?.email);
   const sendHint = canSendEmail
     ? undefined
@@ -286,6 +287,27 @@ export default async function PresupuestoDetailPage({
               <DetailItem label="Email relacionado" value={emailRelacionado} />
             </div>
           </DetailCard>
+
+          <DetailCard eyebrow="Pipeline" title="Lead vinculado">
+            {linkedLead ? (
+              <div className="grid gap-5 sm:grid-cols-2">
+                <DetailItem label="Nombre del lead" value={linkedLead.nombre} />
+                <DetailItem label="Estado actual del lead" value={leadStatus} />
+                <div className="sm:col-span-2">
+                  <Link
+                    href={`/dashboard/leads/${linkedLead.id}`}
+                    className="inline-flex items-center text-sm uppercase tracking-[0.22em] text-sand transition hover:text-ivory focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/45"
+                  >
+                    Abrir ficha del lead
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm leading-7 text-mist/76">
+                Este presupuesto no esta vinculado a ningun lead.
+              </p>
+            )}
+          </DetailCard>
         </div>
 
         <div className="grid gap-6">
@@ -318,10 +340,11 @@ export default async function PresupuestoDetailPage({
             </div>
           </DetailCard>
 
-          <DetailCard eyebrow="Pronto" title="Siguiente evolucion del modulo">
+          <DetailCard eyebrow="Operativo" title="Siguiente capa comercial">
             <div className="grid gap-3">
               <p className="text-sm leading-7 text-mist/78">
-                Proximamente:
+                El modulo de presupuestos ya esta operativo y preparado para crecer
+                con nuevas salidas comerciales.
               </p>
               <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-mist/76">
                 Exportacion PDF

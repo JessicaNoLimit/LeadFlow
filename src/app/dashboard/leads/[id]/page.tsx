@@ -3,16 +3,26 @@ import { notFound } from "next/navigation";
 import { LeadDetailForm } from "@/components/dashboard/lead-detail-form";
 import { LeadPriorityBadge } from "@/components/dashboard/lead-priority-badge";
 import { LeadStatusBadge } from "@/components/dashboard/lead-status-badge";
+import { PresupuestoStatusBadge } from "@/components/dashboard/presupuesto-status-badge";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 
 type Lead = Database["public"]["Tables"]["leads"]["Row"];
+type Presupuesto = Database["public"]["Tables"]["presupuestos"]["Row"];
 
 type LeadDetailPageProps = {
   params: Promise<{
     id: string;
   }>;
 };
+
+const commercialFlowSteps = [
+  { key: "nuevo", label: "Nuevo" },
+  { key: "contactado", label: "Contactado" },
+  { key: "presupuesto_enviado", label: "Presupuesto enviado" },
+  { key: "aceptado", label: "Aceptado" },
+  { key: "rechazado", label: "Rechazado" },
+] as const;
 
 const dateFormatter = new Intl.DateTimeFormat("es-ES", {
   day: "2-digit",
@@ -26,6 +36,11 @@ const dateTimeFormatter = new Intl.DateTimeFormat("es-ES", {
   year: "numeric",
   hour: "2-digit",
   minute: "2-digit",
+});
+
+const currencyFormatter = new Intl.NumberFormat("es-ES", {
+  style: "currency",
+  currency: "EUR",
 });
 
 function formatDate(value: string | null) {
@@ -62,6 +77,22 @@ async function getLeadById(id: string) {
   }
 
   return data;
+}
+
+async function getPresupuestosByLeadId(leadId: string) {
+  const supabase = createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("presupuestos")
+    .select("*")
+    .eq("lead_id", leadId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Failed to load lead presupuestos", error);
+    throw new Error("No se pudieron cargar los presupuestos del lead");
+  }
+
+  return data as Presupuesto[];
 }
 
 function DetailCard({
@@ -114,6 +145,45 @@ function QuickActionLink({
   );
 }
 
+function getLeadStepState(stepKey: (typeof commercialFlowSteps)[number]["key"], currentStatus: string) {
+  if (currentStatus === "archivado") {
+    return "pending";
+  }
+
+  if (currentStatus === "aceptado") {
+    return stepKey === "rechazado"
+      ? "pending"
+      : stepKey === "aceptado" || stepKey === "nuevo" || stepKey === "contactado" || stepKey === "presupuesto_enviado"
+        ? "complete"
+        : "pending";
+  }
+
+  if (currentStatus === "rechazado") {
+    return stepKey === "aceptado"
+      ? "pending"
+      : stepKey === "rechazado" || stepKey === "nuevo" || stepKey === "contactado" || stepKey === "presupuesto_enviado"
+        ? "complete"
+        : "pending";
+  }
+
+  const currentIndex = commercialFlowSteps.findIndex((step) => step.key === currentStatus);
+  const stepIndex = commercialFlowSteps.findIndex((step) => step.key === stepKey);
+
+  if (currentIndex === -1 || stepIndex === -1) {
+    return "pending";
+  }
+
+  if (stepIndex < currentIndex) {
+    return "complete";
+  }
+
+  if (stepIndex === currentIndex) {
+    return "current";
+  }
+
+  return "pending";
+}
+
 export default async function LeadDetailPage({
   params,
 }: LeadDetailPageProps) {
@@ -123,6 +193,8 @@ export default async function LeadDetailPage({
   if (!lead) {
     notFound();
   }
+
+  const presupuestos = await getPresupuestosByLeadId(lead.id);
 
   return (
     <div className="grid gap-6 lg:gap-7">
@@ -173,6 +245,110 @@ export default async function LeadDetailPage({
             <p className="text-sm leading-8 text-mist/82">
               {renderValue(lead.mensaje)}
             </p>
+          </DetailCard>
+
+          <DetailCard eyebrow="Pipeline" title="Flujo comercial">
+            <p className="text-sm leading-7 text-mist/76">
+              Este lead avanza desde la captacion inicial hasta el cierre comercial
+              segun el estado sincronizado dentro del CRM.
+            </p>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+              {commercialFlowSteps.map((step) => {
+                const stepState = getLeadStepState(step.key, lead.estado);
+                const styles =
+                  stepState === "complete"
+                    ? "border-sand/24 bg-sand/[0.08] text-ivory"
+                    : stepState === "current"
+                      ? "border-[#4b6b57]/30 bg-[#102317]/70 text-[#cde7d2]"
+                      : "border-white/8 bg-black/18 text-mist/68";
+
+                return (
+                  <div
+                    key={step.key}
+                    className={`rounded-[1.35rem] border px-4 py-4 transition ${styles}`}
+                  >
+                    <p className="text-[0.62rem] uppercase tracking-[0.22em]">
+                      {stepState === "current"
+                        ? "Actual"
+                        : stepState === "complete"
+                          ? "Completado"
+                          : "Pendiente"}
+                    </p>
+                    <p className="mt-2 text-sm leading-6">{step.label}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </DetailCard>
+
+          <DetailCard eyebrow="Presupuestos" title="Presupuestos asociados">
+            <div className="flex flex-col gap-4 border-b border-white/8 pb-5 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm leading-7 text-mist/76">
+                {presupuestos.length} presupuesto{presupuestos.length === 1 ? "" : "s"} vinculado
+                {presupuestos.length === 1 ? "" : "s"} a este lead.
+              </p>
+              <Link
+                href={`/dashboard/presupuestos?leadId=${lead.id}`}
+                className="inline-flex h-12 items-center justify-center rounded-2xl border border-sand/24 bg-sand/[0.08] px-5 text-[0.72rem] uppercase tracking-[0.22em] text-ivory transition hover:border-sand/40 hover:bg-sand/[0.12] hover:text-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/45"
+              >
+                Crear presupuesto para este lead
+              </Link>
+            </div>
+
+            {presupuestos.length === 0 ? (
+              <div className="mt-6 rounded-[1.5rem] border border-white/8 bg-black/18 p-6">
+                <p className="text-[0.68rem] uppercase tracking-[0.24em] text-sand">
+                  Sin presupuestos
+                </p>
+                <p className="mt-3 text-sm leading-7 text-mist/76">
+                  Todavia no hay presupuestos vinculados a este lead.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-6 grid gap-4">
+                <div className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm leading-7 text-mist/76">
+                  Los cambios de estado del presupuesto actualizan automaticamente el
+                  estado del lead vinculado.
+                </div>
+                {presupuestos.map((presupuesto) => (
+                  <article
+                    key={presupuesto.id}
+                    className="rounded-[1.5rem] border border-white/10 bg-black/18 p-5 shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition duration-200 hover:-translate-y-0.5 hover:border-sand/18 hover:bg-black/22"
+                  >
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="min-w-0">
+                        <Link
+                          href={`/dashboard/presupuestos/${presupuesto.id}`}
+                          className="font-heading text-2xl text-ivory transition hover:text-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/45"
+                        >
+                          {presupuesto.titulo}
+                        </Link>
+                        <p className="mt-2 text-sm text-mist/76">
+                          Creado el {formatDateTime(presupuesto.created_at)}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        <PresupuestoStatusBadge status={presupuesto.estado} />
+                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[0.68rem] uppercase tracking-[0.22em] text-ivory">
+                          {currencyFormatter.format(presupuesto.importe)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 border-t border-white/8 pt-5">
+                      <Link
+                        href={`/dashboard/presupuestos/${presupuesto.id}`}
+                        className="inline-flex items-center text-sm uppercase tracking-[0.22em] text-sand transition hover:text-ivory focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/45"
+                      >
+                        Abrir presupuesto
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </DetailCard>
         </div>
 
