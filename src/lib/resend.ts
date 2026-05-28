@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { calculateIncludedVat, formatCurrencyEs } from "@/lib/pricing";
 
 type SendPresupuestoEmailInput = {
   clientEmail: string;
@@ -8,11 +9,6 @@ type SendPresupuestoEmailInput = {
   presupuestoAmount: number;
   fechaEvento?: string | null;
 };
-
-const currencyFormatter = new Intl.NumberFormat("es-ES", {
-  style: "currency",
-  currency: "EUR",
-});
 
 const dateFormatterEs = new Intl.DateTimeFormat("es-ES", {
   day: "2-digit",
@@ -42,7 +38,10 @@ export async function sendPresupuestoEmail({
   presupuestoAmount,
   fechaEvento,
 }: SendPresupuestoEmailInput) {
-  const amountLabel = currencyFormatter.format(presupuestoAmount);
+  const pricing = calculateIncludedVat(presupuestoAmount);
+  const baseLabel = formatCurrencyEs(pricing.base);
+  const ivaLabel = formatCurrencyEs(pricing.iva);
+  const amountLabel = formatCurrencyEs(pricing.total);
   const descriptionLabel =
     presupuestoDescription?.trim() || "Propuesta comercial personalizada para tu proyecto.";
   const availabilityMessage = fechaEvento
@@ -68,8 +67,18 @@ export async function sendPresupuestoEmail({
             <p style="margin:0 0 10px;font-size:11px;letter-spacing:0.26em;text-transform:uppercase;color:#d7c6a8;">Propuesta</p>
             <h2 style="margin:0 0 14px;font-size:28px;line-height:1.2;font-weight:500;color:#f4efe7;">${presupuestoTitle}</h2>
             <p style="margin:0 0 18px;font-size:15px;line-height:1.8;color:#d8d1c7;">${descriptionLabel}</p>
-            <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#a8a097;">Importe</p>
-            <p style="margin:0;font-size:30px;line-height:1.2;color:#f4efe7;">${amountLabel}</p>
+            <div style="margin-top:22px;border-top:1px solid rgba(255,255,255,0.08);padding-top:18px;">
+              <p style="margin:0 0 14px;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#a8a097;">Desglose economico</p>
+              <div style="display:grid;gap:10px;">
+                <p style="display:flex;justify-content:space-between;gap:16px;margin:0;font-size:14px;line-height:1.6;color:#d8d1c7;"><span>Base imponible</span><strong style="font-weight:500;color:#f4efe7;">${baseLabel}</strong></p>
+                <p style="display:flex;justify-content:space-between;gap:16px;margin:0;font-size:14px;line-height:1.6;color:#d8d1c7;"><span>IVA incluido (21%)</span><strong style="font-weight:500;color:#f4efe7;">${ivaLabel}</strong></p>
+              </div>
+              <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;">
+                <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#d7c6a8;">Total propuesta</p>
+                <p style="margin:0;font-size:32px;line-height:1.2;color:#f4efe7;">${amountLabel}</p>
+                <p style="margin:8px 0 0;font-size:13px;line-height:1.6;color:#a8a097;">Importe final con IVA incluido.</p>
+              </div>
+            </div>
           </div>
 
           <div style="margin-top:28px;border-top:1px solid rgba(255,255,255,0.08);padding-top:24px;">

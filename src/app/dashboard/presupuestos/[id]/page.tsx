@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { PresupuestoDetailForm } from "@/components/dashboard/presupuesto-detail-form";
 import { PresupuestoStatusBadge } from "@/components/dashboard/presupuesto-status-badge";
 import { PrintBudgetButton } from "@/components/dashboard/print-budget-button";
+import { calculateIncludedVat, formatCurrencyEs } from "@/lib/pricing";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 
@@ -27,11 +28,6 @@ const dateFormatter = new Intl.DateTimeFormat("es-ES", {
   day: "2-digit",
   month: "long",
   year: "numeric",
-});
-
-const currencyFormatter = new Intl.NumberFormat("es-ES", {
-  style: "currency",
-  currency: "EUR",
 });
 
 function formatDateTime(value: string | null) {
@@ -123,6 +119,47 @@ function DetailItem({
   );
 }
 
+function PriceBreakdown({
+  base,
+  iva,
+  total,
+}: Readonly<{
+  base: number;
+  iva: number;
+  total: number;
+}>) {
+  return (
+    <div className="rounded-2xl border border-sand/16 bg-sand/[0.06] p-5">
+      <p className="text-[0.68rem] uppercase tracking-[0.24em] text-sand">
+        Importe final
+      </p>
+      <div className="mt-4 grid gap-3">
+        <div className="flex items-center justify-between gap-4 text-sm leading-7 text-mist/78">
+          <span>Base imponible</span>
+          <span className="text-ivory">{formatCurrencyEs(base)}</span>
+        </div>
+        <div className="flex items-center justify-between gap-4 text-sm leading-7 text-mist/78">
+          <span>IVA incluido (21%)</span>
+          <span className="text-ivory">{formatCurrencyEs(iva)}</span>
+        </div>
+        <div className="border-t border-white/8 pt-4">
+          <div className="flex items-end justify-between gap-4">
+            <span className="text-[0.68rem] uppercase tracking-[0.22em] text-mist/56">
+              Total
+            </span>
+            <span className="font-heading text-3xl text-ivory">
+              {formatCurrencyEs(total)}
+            </span>
+          </div>
+          <p className="mt-2 text-xs leading-6 text-mist/60">
+            Importe final con IVA incluido.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function QuickActionLink({
   href,
   label,
@@ -163,6 +200,7 @@ export default async function PresupuestoDetailPage({
     ? undefined
     : "Vincula este presupuesto a un lead con email o indica un cliente manual para enviarlo.";
   const fechaSesion = presupuesto.fecha_evento ? formatDate(presupuesto.fecha_evento) : null;
+  const pricing = calculateIncludedVat(presupuesto.importe);
 
   return (
     <div className="grid gap-6 lg:gap-7">
@@ -203,7 +241,7 @@ export default async function PresupuestoDetailPage({
           <div className="flex flex-wrap items-center gap-3 print:hidden">
             <PresupuestoStatusBadge status={presupuesto.estado} />
             <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[0.72rem] uppercase tracking-[0.22em] text-ivory">
-              {currencyFormatter.format(presupuesto.importe)}
+              {formatCurrencyEs(pricing.total)}
             </span>
           </div>
         </div>
@@ -250,10 +288,13 @@ export default async function PresupuestoDetailPage({
                 </div>
                 <div className="rounded-2xl border border-white/8 bg-black/18 p-4">
                   <p className="text-[0.68rem] uppercase tracking-[0.22em] text-mist/56">
-                    Importe
+                    Total propuesta
                   </p>
                   <p className="mt-2 font-heading text-3xl text-ivory">
-                    {currencyFormatter.format(presupuesto.importe)}
+                    {formatCurrencyEs(pricing.total)}
+                  </p>
+                  <p className="mt-1 text-xs leading-6 text-mist/60">
+                    IVA incluido al 21%.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-white/8 bg-black/18 p-4">
@@ -272,6 +313,10 @@ export default async function PresupuestoDetailPage({
                     <p className="mt-2 text-sm leading-7 text-ivory">{fechaSesion}</p>
                   </div>
                 ) : null}
+              </div>
+
+              <div className="mt-6">
+                <PriceBreakdown {...pricing} />
               </div>
 
               <div className="mt-6 rounded-[1.5rem] border border-white/8 bg-black/18 p-5">
@@ -306,10 +351,7 @@ export default async function PresupuestoDetailPage({
                 label="Estado actual"
                 value={presupuesto.estado.replaceAll("_", " ")}
               />
-              <DetailItem
-                label="Importe"
-                value={currencyFormatter.format(presupuesto.importe)}
-              />
+              <DetailItem label="Total" value={formatCurrencyEs(pricing.total)} />
               <DetailItem
                 label="Fecha de creacion"
                 value={formatDateTime(presupuesto.created_at)}
@@ -324,6 +366,9 @@ export default async function PresupuestoDetailPage({
                 label="Ultima actualizacion"
                 value={formatDateTime(presupuesto.updated_at)}
               />
+              <div className="sm:col-span-2">
+                <PriceBreakdown {...pricing} />
+              </div>
             </div>
           </DetailCard>
 

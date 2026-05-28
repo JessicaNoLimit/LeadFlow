@@ -5,6 +5,7 @@ import { LeadPriorityBadge } from "@/components/dashboard/lead-priority-badge";
 import { LeadQuickActions } from "@/components/dashboard/lead-quick-actions";
 import { LeadStatusBadge } from "@/components/dashboard/lead-status-badge";
 import { PresupuestoStatusBadge } from "@/components/dashboard/presupuesto-status-badge";
+import { formatCurrencyEs } from "@/lib/pricing";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 
@@ -37,11 +38,6 @@ const dateTimeFormatter = new Intl.DateTimeFormat("es-ES", {
   year: "numeric",
   hour: "2-digit",
   minute: "2-digit",
-});
-
-const currencyFormatter = new Intl.NumberFormat("es-ES", {
-  style: "currency",
-  currency: "EUR",
 });
 
 function formatDate(value: string | null) {
@@ -349,8 +345,12 @@ export default async function LeadDetailPage({
 
                       <div className="flex flex-wrap items-center gap-3">
                         <PresupuestoStatusBadge status={presupuesto.estado} />
-                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[0.68rem] uppercase tracking-[0.22em] text-ivory">
-                          {currencyFormatter.format(presupuesto.importe)}
+                        <span
+                          title="Importe final con IVA incluido al 21%."
+                          className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[0.68rem] uppercase tracking-[0.22em] text-ivory"
+                        >
+                          {formatCurrencyEs(presupuesto.importe)}
+                          <span className="ml-2 text-mist/54">IVA incluido</span>
                         </span>
                       </div>
                     </div>
