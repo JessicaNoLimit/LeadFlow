@@ -345,7 +345,7 @@ export function PresupuestoCreateForm({
               htmlFor="presupuesto-importe"
               className="text-[0.68rem] uppercase tracking-[0.24em] text-mist/58"
             >
-              Importe
+              Importe final
             </label>
             <input
               id="presupuesto-importe"
@@ -358,6 +358,9 @@ export function PresupuestoCreateForm({
               placeholder="0.00"
               disabled={isSubmitting}
             />
+            <p className="mt-2 text-xs leading-6 text-mist/60">
+              Importe final con IVA incluido al 21%.
+            </p>
           </div>
 
           <div>

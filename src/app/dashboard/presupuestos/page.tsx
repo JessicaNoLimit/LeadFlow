@@ -1,5 +1,6 @@
 import { PresupuestoCreateForm } from "@/components/dashboard/presupuesto-create-form";
 import { PresupuestosList } from "@/components/dashboard/presupuestos-list";
+import { formatCurrencyEs } from "@/lib/pricing";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 
@@ -101,10 +102,7 @@ export default async function DashboardPresupuestosPage({
     0,
   );
 
-  const totalAmountLabel = new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: "EUR",
-  }).format(totalAmount);
+  const totalAmountLabel = formatCurrencyEs(totalAmount);
 
   return (
     <div className="grid gap-6 lg:gap-7">
@@ -140,7 +138,7 @@ export default async function DashboardPresupuestosPage({
         <SummaryCard
           label="Importe acumulado"
           value={totalAmountLabel}
-          description="Suma total de importes registrados."
+          description="Suma total de importes finales con IVA incluido."
         />
       </section>
 
