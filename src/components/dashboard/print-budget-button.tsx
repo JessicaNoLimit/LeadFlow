@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { showToast } from "@/lib/toast";
 
 export function PrintBudgetButton() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -11,6 +12,7 @@ export function PrintBudgetButton() {
     }
 
     setIsGenerating(true);
+    showToast("Preparando propuesta para imprimir o guardar como PDF.", "info");
     window.setTimeout(() => {
       window.print();
       setIsGenerating(false);

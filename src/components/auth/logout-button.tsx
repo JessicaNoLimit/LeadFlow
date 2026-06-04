@@ -15,11 +15,11 @@ export function LogoutButton() {
     try {
       const supabase = createSupabaseBrowserAuthClient();
       await supabase.auth.signOut();
-      persistToast("Sesion cerrada.", "info");
+      persistToast("Sesion cerrada correctamente.", "info");
       router.replace("/login");
       router.refresh();
     } catch {
-      showToast("No se pudo cerrar la sesion.", "error");
+      showToast("No hemos podido cerrar la sesion. Intentalo de nuevo.", "error");
       setIsLoggingOut(false);
     }
   }
