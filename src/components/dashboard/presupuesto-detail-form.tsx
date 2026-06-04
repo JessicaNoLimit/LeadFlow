@@ -54,6 +54,9 @@ export function PresupuestoDetailForm({
     );
   const [isSaving, setIsSaving] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [savingAction, setSavingAction] = useState<
+    "form" | (typeof presupuestoStatuses)[number] | null
+  >(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -98,7 +101,12 @@ export function PresupuestoDetailForm({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSaving || isSending) {
+      return;
+    }
+
     setIsSaving(true);
+    setSavingAction("form");
     setSuccessMessage("");
     setErrorMessage("");
 
@@ -136,13 +144,19 @@ export function PresupuestoDetailForm({
       showToast(nextErrorMessage, "error");
     } finally {
       setIsSaving(false);
+      setSavingAction(null);
     }
   }
 
   async function handleQuickStatusChange(
     nextStatus: (typeof presupuestoStatuses)[number],
   ) {
+    if (isSaving || isSending) {
+      return;
+    }
+
     setIsSaving(true);
+    setSavingAction(nextStatus);
     setSuccessMessage("");
     setErrorMessage("");
 
@@ -165,10 +179,15 @@ export function PresupuestoDetailForm({
       showToast(nextErrorMessage, "error");
     } finally {
       setIsSaving(false);
+      setSavingAction(null);
     }
   }
 
   async function handleSendPresupuesto() {
+    if (isSaving || isSending) {
+      return;
+    }
+
     setIsSending(true);
     setSuccessMessage("");
     setErrorMessage("");
@@ -233,7 +252,7 @@ export function PresupuestoDetailForm({
         </div>
         {isSaving || isSending ? (
           <span className="rounded-full border border-sand/18 bg-sand/[0.08] px-3 py-1 text-[0.62rem] uppercase tracking-[0.22em] text-sand">
-            {isSending ? "Enviando" : "Guardando"}
+            {isSending ? "Enviando" : "Actualizando"}
           </span>
         ) : null}
       </div>
@@ -246,7 +265,7 @@ export function PresupuestoDetailForm({
             disabled={!canSendEmail || isSaving || isSending}
             className="inline-flex h-12 items-center justify-center rounded-2xl border border-sand/18 bg-sand/[0.08] px-5 text-[0.72rem] uppercase tracking-[0.22em] text-sand transition hover:border-sand/36 hover:bg-sand/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/50 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSending ? "Enviando presupuesto..." : "Enviar presupuesto"}
+            {isSending ? "Enviando propuesta..." : "Enviar presupuesto"}
           </button>
           {!canSendEmail ? (
             <p className="text-sm leading-7 text-mist/72">
@@ -374,7 +393,7 @@ export function PresupuestoDetailForm({
           disabled={isSaving || isSending || estado === "enviado"}
           className="inline-flex h-12 items-center justify-center rounded-2xl border border-sand/18 bg-sand/[0.08] px-5 text-[0.72rem] uppercase tracking-[0.22em] text-sand transition hover:border-sand/36 hover:bg-sand/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/50 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Marcar como enviado
+          {savingAction === "enviado" ? "Actualizando..." : "Marcar como enviado"}
         </button>
         <button
           type="button"
@@ -382,7 +401,7 @@ export function PresupuestoDetailForm({
           disabled={isSaving || isSending || estado === "aceptado"}
           className="inline-flex h-12 items-center justify-center rounded-2xl border border-[#4b6b57]/30 bg-[#102317]/70 px-5 text-[0.72rem] uppercase tracking-[0.22em] text-[#cde7d2] transition hover:border-[#4b6b57]/46 hover:bg-[#102317]/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4b6b57]/45 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Marcar como aceptado
+          {savingAction === "aceptado" ? "Actualizando..." : "Marcar como aceptado"}
         </button>
         <button
           type="button"
@@ -390,7 +409,7 @@ export function PresupuestoDetailForm({
           disabled={isSaving || isSending || estado === "rechazado"}
           className="inline-flex h-12 items-center justify-center rounded-2xl border border-[#8f5959]/22 bg-[#241515]/35 px-5 text-[0.72rem] uppercase tracking-[0.22em] text-[#efc4c4] transition hover:border-[#8f5959]/42 hover:bg-[#241515]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8f5959]/45 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Marcar como rechazado
+          {savingAction === "rechazado" ? "Actualizando..." : "Marcar como rechazado"}
         </button>
       </div>
 
@@ -400,7 +419,7 @@ export function PresupuestoDetailForm({
           disabled={isSaving || isSending}
           className="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-white/12 px-5 text-[0.72rem] uppercase tracking-[0.22em] text-ivory transition hover:border-sand/40 hover:text-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/50 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSaving ? "Guardando cambios..." : "Guardar cambios"}
+          {savingAction === "form" ? "Actualizando presupuesto..." : "Guardar cambios"}
         </button>
       </div>
 

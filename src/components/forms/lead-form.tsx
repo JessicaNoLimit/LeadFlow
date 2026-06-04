@@ -136,6 +136,9 @@ export function LeadForm() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
 
     const requiredFieldNames: Array<keyof LeadFormValues | "privacyAccepted"> = [
       "nombre",

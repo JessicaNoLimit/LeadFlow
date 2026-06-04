@@ -64,6 +64,10 @@ export function PresupuestoCreateForm({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
+
     setIsSubmitting(true);
     setSuccessMessage("");
     setErrorMessage("");
@@ -397,7 +401,7 @@ export function PresupuestoCreateForm({
           disabled={isSubmitting}
           className="inline-flex h-12 items-center justify-center rounded-2xl border border-sand/18 bg-sand/[0.08] px-5 text-[0.72rem] uppercase tracking-[0.22em] text-sand transition hover:border-sand/36 hover:bg-sand/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/50 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSubmitting ? "Creando presupuesto..." : "Crear presupuesto"}
+          {isSubmitting ? "Guardando presupuesto..." : "Crear presupuesto"}
         </button>
 
         {successMessage ? (

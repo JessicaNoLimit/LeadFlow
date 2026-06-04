@@ -16,6 +16,10 @@ export function LoginForm() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
+
     setError(null);
     setIsSubmitting(true);
 
@@ -86,7 +90,7 @@ export function LoginForm() {
         disabled={isSubmitting}
         className="inline-flex min-h-14 w-full items-center justify-center rounded-full border border-sand bg-sand px-8 text-sm uppercase tracking-[0.18em] text-ink transition hover:bg-transparent hover:text-sand disabled:cursor-not-allowed disabled:opacity-70"
       >
-        {isSubmitting ? "Accediendo..." : "Acceder al CRM"}
+        {isSubmitting ? "Iniciando sesion..." : "Acceder al CRM"}
       </button>
     </form>
   );

@@ -61,6 +61,10 @@ export function LeadDetailForm({ lead }: LeadDetailFormProps) {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSaving || isDeleting) {
+      return;
+    }
+
     setIsSaving(true);
     setSuccessMessage("");
     setErrorMessage("");
@@ -104,6 +108,10 @@ export function LeadDetailForm({ lead }: LeadDetailFormProps) {
   }
 
   async function handleDelete() {
+    if (isSaving || isDeleting) {
+      return;
+    }
+
     const shouldDelete = window.confirm(
       "Esta accion eliminara el lead de forma permanente. Quieres continuar?",
     );
@@ -233,7 +241,7 @@ export function LeadDetailForm({ lead }: LeadDetailFormProps) {
             disabled={isSaving || isDeleting}
             className="inline-flex h-12 items-center justify-center rounded-2xl border border-sand/18 bg-sand/[0.08] px-5 text-[0.72rem] uppercase tracking-[0.22em] text-sand transition hover:border-sand/36 hover:bg-sand/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/50 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSaving ? "Guardando cambios..." : "Guardar cambios"}
+            {isSaving ? "Actualizando..." : "Guardar cambios"}
           </button>
           <button
             type="button"

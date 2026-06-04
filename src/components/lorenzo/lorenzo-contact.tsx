@@ -49,6 +49,9 @@ export function LorenzoContact() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
 
     const nombre = values.nombre.trim();
     const email = values.email.trim();
@@ -199,7 +202,7 @@ export function LorenzoContact() {
               disabled={isSubmitting}
               className="w-full bg-stone-950 py-5 text-xs uppercase tracking-[0.3em] text-white transition duration-500 hover:bg-stone-800"
             >
-              {isSubmitting ? "Enviando..." : "Enviar Solicitud"}
+              {isSubmitting ? "Enviando solicitud..." : "Enviar Solicitud"}
             </button>
             {submissionState.message ? (
               <p
