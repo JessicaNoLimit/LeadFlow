@@ -55,6 +55,10 @@ export function LeadQuickActions({
   const canCreatePresupuesto = status !== "rechazado" && status !== "aceptado";
 
   async function handleMarkAsContactado() {
+    if (isUpdating) {
+      return;
+    }
+
     setIsUpdating(true);
 
     try {
