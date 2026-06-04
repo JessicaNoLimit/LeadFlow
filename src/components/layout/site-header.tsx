@@ -34,7 +34,7 @@ export function SiteHeader() {
 
         <Link
           href="/contacto"
-          className="rounded-full border border-white/12 px-4 py-2 text-[0.7rem] uppercase tracking-[0.22em] text-ivory transition hover:border-sand hover:text-sand"
+          className="inline-flex min-h-11 items-center justify-center rounded-full border border-sand/60 bg-sand/[0.1] px-5 py-2.5 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-ivory shadow-[0_10px_28px_rgba(215,198,168,0.09)] transition-all duration-700 ease-out hover:border-sand/90 hover:bg-sand/15 hover:text-sand hover:shadow-[0_0_24px_rgba(215,198,168,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/45 sm:px-6"
         >
           Solicitar propuesta
         </Link>

@@ -405,7 +405,7 @@ export function LeadForm() {
         <button
           type="submit"
           disabled={isSubmitting || !canSubmit}
-          className="inline-flex min-h-14 items-center justify-center rounded-full border border-sand bg-sand px-8 text-sm uppercase tracking-[0.18em] text-ink transition hover:bg-transparent hover:text-sand disabled:cursor-not-allowed disabled:opacity-70"
+          className="inline-flex min-h-14 items-center justify-center rounded-full border border-[#d9c391]/80 bg-[#cdb27a] px-9 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-[#080706] shadow-[0_14px_36px_rgba(215,198,168,0.13)] transition-all duration-700 ease-out hover:border-[#ead7aa] hover:bg-[#d8bf89] hover:text-[#050403] hover:shadow-[0_0_30px_rgba(215,198,168,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/45 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:bg-[#cdb27a] disabled:hover:shadow-[0_14px_36px_rgba(215,198,168,0.13)]"
         >
           {isSubmitting ? "Enviando solicitud..." : "Solicitar propuesta"}
         </button>

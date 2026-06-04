@@ -7,7 +7,7 @@ export default function SobrePage() {
       <PageIntro
         eyebrow="Sobre el estudio"
         title="Una mirada cinematografica con sensibilidad editorial y atencion humana."
-        description="Lorenzo Bellucci Studio se construye desde la calma, la direccion artistica y el respeto por las personas fotografiadas. Esta base deja lista la narrativa del autor para futuras imagenes y textos mas profundos."
+        description="Lorenzo Bellucci Studio se construye desde la calma, la direccion artistica y el respeto por las personas fotografiadas."
       />
       <AboutStory />
     </>

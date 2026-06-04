@@ -1,5 +1,6 @@
+import Image from "next/image";
 import { Container } from "@/components/ui/container";
-import { ImagePlaceholder } from "@/components/ui/image-placeholder";
+import lorenzoImage from "@/images/lorenzo.png";
 
 export function AboutStory() {
   return (
@@ -22,16 +23,31 @@ export function AboutStory() {
                 memoria visual elegante, honesta y duradera.
               </p>
               <p>
-                Esta pagina queda preparada para incorporar fotografia real del
-                autor o del estudio desde <span className="text-ivory">public/images/studio</span>.
+                Desde el estudio, cada encargo se plantea con una preparacion
+                tranquila, una direccion clara y una entrega cuidada hasta el
+                ultimo detalle.
               </p>
             </div>
           </div>
 
-          <ImagePlaceholder
-            label="Studio Portrait"
-            className="mx-auto w-full max-w-[28rem]"
-          />
+          <figure className="relative mx-auto aspect-[4/5] w-full max-w-[28rem] overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.03] shadow-[0_28px_80px_rgba(0,0,0,0.34)]">
+            <Image
+              src={lorenzoImage}
+              alt="Retrato de Lorenzo Bellucci, fotografo y director creativo del estudio"
+              fill
+              sizes="(min-width: 1024px) 28rem, 100vw"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/5" />
+            <figcaption className="absolute bottom-6 left-6 right-6">
+              <p className="text-[0.65rem] uppercase tracking-[0.28em] text-sand">
+                Direccion creativa
+              </p>
+              <p className="mt-2 font-heading text-2xl text-ivory">
+                Lorenzo Bellucci
+              </p>
+            </figcaption>
+          </figure>
         </div>
       </Container>
     </section>
