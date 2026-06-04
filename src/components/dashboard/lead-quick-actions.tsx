@@ -34,6 +34,8 @@ type UpdateLeadResponse =
 
 const actionButtonClassName =
   "inline-flex h-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-[0.68rem] uppercase tracking-[0.2em] text-ivory transition hover:border-sand/40 hover:text-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/45 disabled:cursor-not-allowed disabled:opacity-60";
+const leadUpdateErrorMessage =
+  "No hemos podido actualizar el lead. Intentalo de nuevo.";
 
 export function LeadQuickActions({
   leadId,
@@ -75,18 +77,13 @@ export function LeadQuickActions({
       const result = (await response.json()) as UpdateLeadResponse;
 
       if (!response.ok || !result.success) {
-        throw new Error(
-          result.success ? "No se pudo actualizar el lead." : result.error,
-        );
+        throw new Error(leadUpdateErrorMessage);
       }
 
       showToast("Lead marcado como contactado.", "success");
       router.refresh();
-    } catch (error) {
-      showToast(
-        error instanceof Error ? error.message : "No se pudo actualizar el lead.",
-        "error",
-      );
+    } catch {
+      showToast(leadUpdateErrorMessage, "error");
     } finally {
       setIsUpdating(false);
     }
@@ -97,7 +94,7 @@ export function LeadQuickActions({
       await navigator.clipboard.writeText(value);
       showToast(successMessage, "success");
     } catch {
-      showToast("No se pudo copiar al portapapeles.", "error");
+      showToast("No se pudo copiar el dato. Puedes seleccionarlo manualmente.", "error");
     }
   }
 
@@ -138,7 +135,7 @@ export function LeadQuickActions({
       {showCopyEmail ? (
         <button
           type="button"
-          onClick={() => copyToClipboard(email, "Email copiado correctamente.")}
+          onClick={() => copyToClipboard(email, "Email copiado al portapapeles.")}
           className={actionButtonClassName}
         >
           Copiar email
@@ -149,7 +146,7 @@ export function LeadQuickActions({
         <button
           type="button"
           onClick={() =>
-            copyToClipboard(telefono, "Telefono copiado correctamente.")
+            copyToClipboard(telefono, "Telefono copiado al portapapeles.")
           }
           className={actionButtonClassName}
         >

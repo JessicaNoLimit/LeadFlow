@@ -35,6 +35,8 @@ const statusLabels: Record<(typeof presupuestoStatuses)[number], string> = {
   aceptado: "Aceptado",
   rechazado: "Rechazado",
 };
+const createPresupuestoErrorMessage =
+  "No hemos podido crear el presupuesto. Revisa los datos e intentalo de nuevo.";
 
 export function PresupuestoCreateForm({
   leads,
@@ -94,11 +96,8 @@ export function PresupuestoCreateForm({
       const result = (await response.json()) as CreatePresupuestoResponse;
 
       if (!response.ok || !result.success) {
-        const nextErrorMessage = result.success
-          ? "No se pudo crear el presupuesto."
-          : result.error;
-        setErrorMessage(nextErrorMessage);
-        showToast(nextErrorMessage, "error");
+        setErrorMessage(createPresupuestoErrorMessage);
+        showToast(createPresupuestoErrorMessage, "error");
         return;
       }
 
@@ -116,8 +115,8 @@ export function PresupuestoCreateForm({
       showToast("Presupuesto creado correctamente.", "success");
       router.refresh();
     } catch {
-      setErrorMessage("Se produjo un error inesperado al crear el presupuesto.");
-      showToast("No se pudo crear el presupuesto.", "error");
+      setErrorMessage(createPresupuestoErrorMessage);
+      showToast(createPresupuestoErrorMessage, "error");
     } finally {
       setIsSubmitting(false);
     }

@@ -26,6 +26,12 @@ const initialValues: LorenzoContactValues = {
 };
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const contactSuccessMessage =
+  "Solicitud recibida correctamente. Revisaremos los detalles y nos pondremos en contacto contigo lo antes posible.";
+const contactErrorMessage =
+  "No hemos podido enviar tu solicitud en este momento. Intentalo de nuevo en unos minutos o contacta directamente con el estudio.";
+const requiredFieldsMessage =
+  "Completa los campos obligatorios para poder enviar tu solicitud.";
 
 export function LorenzoContact() {
   const [values, setValues] = useState(initialValues);
@@ -60,7 +66,7 @@ export function LorenzoContact() {
     if (!nombre || !emailPattern.test(email) || !tipoSesion) {
       setSubmissionState({
         status: "error",
-        message: "Indica nombre, email valido y tipo de sesion.",
+        message: requiredFieldsMessage,
       });
       return;
     }
@@ -89,18 +95,18 @@ export function LorenzoContact() {
       const result = (await response.json()) as { success?: boolean; error?: string };
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error || "No se pudo enviar la solicitud.");
+        throw new Error(contactErrorMessage);
       }
 
       setValues(initialValues);
       setSubmissionState({
         status: "success",
-        message: "Solicitud recibida. El estudio revisara tu proyecto y contactara contigo.",
+        message: contactSuccessMessage,
       });
     } catch {
       setSubmissionState({
         status: "error",
-        message: "No se pudo enviar la solicitud. Intentalo de nuevo en unos minutos.",
+        message: contactErrorMessage,
       });
     } finally {
       setIsSubmitting(false);

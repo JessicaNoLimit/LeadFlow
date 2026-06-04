@@ -13,7 +13,7 @@ import { LorenzoTestimonial } from "./lorenzo-testimonial";
 
 export function LorenzoLanding() {
   return (
-    <main className="min-h-screen bg-[#f9f8f6] text-[#1a1a1a] antialiased">
+    <main className="min-h-screen overflow-x-hidden bg-[#f9f8f6] text-[#1a1a1a] antialiased">
       <LorenzoInteractions />
       <LorenzoNavigation />
       <LorenzoHero />

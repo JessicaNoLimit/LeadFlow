@@ -16,8 +16,8 @@ export function DashboardShell({
       <div className="dashboard-header print:hidden">
         <DashboardHeader userEmail={userEmail} />
       </div>
-      <div className="relative mx-auto grid w-full max-w-[1600px] gap-6 px-5 py-5 sm:px-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-8 lg:py-8 print:block print:max-w-none print:px-0 print:py-0">
-        <div className="dashboard-sidebar print:hidden">
+      <div className="relative mx-auto grid w-full min-w-0 max-w-[1600px] gap-6 px-5 py-5 sm:px-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-8 lg:py-8 print:block print:max-w-none print:px-0 print:py-0">
+        <div className="dashboard-sidebar min-w-0 print:hidden">
           <DashboardSidebar />
         </div>
         <main className="dashboard-main min-w-0 print:min-w-full">{children}</main>

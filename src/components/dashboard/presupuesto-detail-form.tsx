@@ -33,6 +33,10 @@ const statusLabels: Record<(typeof presupuestoStatuses)[number], string> = {
   aceptado: "Aceptado",
   rechazado: "Rechazado",
 };
+const updatePresupuestoErrorMessage =
+  "No hemos podido actualizar el presupuesto. Revisa los datos e intentalo de nuevo.";
+const sendPresupuestoErrorMessage =
+  "No hemos podido enviar la propuesta. Revisa que el cliente tenga un email valido.";
 
 export function PresupuestoDetailForm({
   presupuesto,
@@ -78,10 +82,7 @@ export function PresupuestoDetailForm({
     const result = (await response.json()) as UpdatePresupuestoResponse;
 
     if (!response.ok || !result.success) {
-      const nextErrorMessage = result.success
-        ? "No se pudo actualizar el presupuesto."
-        : result.error;
-      throw new Error(nextErrorMessage);
+      throw new Error(updatePresupuestoErrorMessage);
     }
 
     setTitulo(result.presupuesto.titulo);
@@ -111,7 +112,7 @@ export function PresupuestoDetailForm({
     setErrorMessage("");
 
     try {
-      const updatedPresupuesto = await updatePresupuesto({
+      await updatePresupuesto({
         titulo,
         descripcion,
         importe,
@@ -119,29 +120,12 @@ export function PresupuestoDetailForm({
         fecha_evento: fechaEvento,
       });
 
-      const leadWasSynced =
-        Boolean(updatedPresupuesto.lead_id) &&
-        updatedPresupuesto.estado !== "borrador";
-
-      setSuccessMessage(
-        leadWasSynced
-          ? "Cambios guardados correctamente. El lead vinculado ha quedado sincronizado."
-          : "Cambios guardados correctamente.",
-      );
-      showToast(
-        leadWasSynced
-          ? "Presupuesto actualizado y lead sincronizado."
-          : "Presupuesto actualizado correctamente.",
-        "success",
-      );
+      setSuccessMessage("Presupuesto actualizado correctamente.");
+      showToast("Presupuesto actualizado correctamente.", "success");
       router.refresh();
-    } catch (error) {
-      const nextErrorMessage =
-        error instanceof Error
-          ? error.message
-          : "No se pudo actualizar el presupuesto.";
-      setErrorMessage(nextErrorMessage);
-      showToast(nextErrorMessage, "error");
+    } catch {
+      setErrorMessage(updatePresupuestoErrorMessage);
+      showToast(updatePresupuestoErrorMessage, "error");
     } finally {
       setIsSaving(false);
       setSavingAction(null);
@@ -162,21 +146,12 @@ export function PresupuestoDetailForm({
 
     try {
       await updatePresupuesto({ estado: nextStatus });
-      setSuccessMessage(`Estado actualizado a ${statusLabels[nextStatus].toLowerCase()}.`);
-      showToast(
-        presupuesto.lead_id && nextStatus !== "borrador"
-          ? "Estado del presupuesto actualizado y lead sincronizado."
-          : "Estado del presupuesto actualizado.",
-        "success",
-      );
+      setSuccessMessage("Presupuesto actualizado correctamente.");
+      showToast("Presupuesto actualizado correctamente.", "success");
       router.refresh();
-    } catch (error) {
-      const nextErrorMessage =
-        error instanceof Error
-          ? error.message
-          : "No se pudo actualizar el presupuesto.";
-      setErrorMessage(nextErrorMessage);
-      showToast(nextErrorMessage, "error");
+    } catch {
+      setErrorMessage(updatePresupuestoErrorMessage);
+      showToast(updatePresupuestoErrorMessage, "error");
     } finally {
       setIsSaving(false);
       setSavingAction(null);
@@ -200,10 +175,7 @@ export function PresupuestoDetailForm({
       const result = (await response.json()) as UpdatePresupuestoResponse;
 
       if (!response.ok || !result.success) {
-        const nextErrorMessage = result.success
-          ? "No se pudo enviar el presupuesto."
-          : result.error;
-        throw new Error(nextErrorMessage);
+        throw new Error(sendPresupuestoErrorMessage);
       }
 
       setEstado(
@@ -213,24 +185,12 @@ export function PresupuestoDetailForm({
           ? (result.presupuesto.estado as (typeof presupuestoStatuses)[number])
           : "enviado",
       );
-      const leadWasSynced = Boolean(result.presupuesto.lead_id);
-      setSuccessMessage(
-        leadWasSynced
-          ? "Presupuesto enviado correctamente al cliente y lead sincronizado."
-          : "Presupuesto enviado correctamente al cliente.",
-      );
-      showToast(
-        leadWasSynced
-          ? "Presupuesto enviado y lead sincronizado."
-          : "Presupuesto enviado correctamente.",
-        "success",
-      );
+      setSuccessMessage("Propuesta enviada correctamente al cliente.");
+      showToast("Propuesta enviada correctamente al cliente.", "success");
       router.refresh();
-    } catch (error) {
-      const nextErrorMessage =
-        error instanceof Error ? error.message : "No se pudo enviar el presupuesto.";
-      setErrorMessage(nextErrorMessage);
-      showToast(nextErrorMessage, "error");
+    } catch {
+      setErrorMessage(sendPresupuestoErrorMessage);
+      showToast(sendPresupuestoErrorMessage, "error");
     } finally {
       setIsSending(false);
     }

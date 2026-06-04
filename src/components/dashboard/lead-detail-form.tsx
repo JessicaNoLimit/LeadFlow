@@ -48,6 +48,10 @@ const priorityLabels: Record<string, string> = {
   media: "Media",
   alta: "Alta",
 };
+const leadUpdateErrorMessage =
+  "No hemos podido actualizar el lead. Intentalo de nuevo.";
+const leadDeleteErrorMessage =
+  "No hemos podido eliminar el lead. Intentalo de nuevo.";
 
 export function LeadDetailForm({ lead }: LeadDetailFormProps) {
   const router = useRouter();
@@ -85,23 +89,20 @@ export function LeadDetailForm({ lead }: LeadDetailFormProps) {
       const result = (await response.json()) as UpdateLeadResponse;
 
       if (!response.ok || !result.success) {
-        const nextErrorMessage = result.success
-          ? "No se pudieron guardar los cambios."
-          : result.error;
-        setErrorMessage(nextErrorMessage);
-        showToast(nextErrorMessage, "error");
+        setErrorMessage(leadUpdateErrorMessage);
+        showToast(leadUpdateErrorMessage, "error");
         return;
       }
 
       setStatus(result.lead.estado);
       setPriority(result.lead.prioridad);
       setInternalNotes(result.lead.notas_internas ?? "");
-      setSuccessMessage("Cambios guardados correctamente.");
+      setSuccessMessage("Lead actualizado correctamente.");
       showToast("Lead actualizado correctamente.", "success");
       router.refresh();
     } catch {
-      setErrorMessage("Se produjo un error inesperado al guardar.");
-      showToast("No se pudieron guardar los cambios.", "error");
+      setErrorMessage(leadUpdateErrorMessage);
+      showToast(leadUpdateErrorMessage, "error");
     } finally {
       setIsSaving(false);
     }
@@ -133,11 +134,8 @@ export function LeadDetailForm({ lead }: LeadDetailFormProps) {
         | { success: false; error: string };
 
       if (!response.ok || !result.success) {
-        const nextErrorMessage = result.success
-          ? "No se pudo eliminar el lead."
-          : result.error;
-        setErrorMessage(nextErrorMessage);
-        showToast(nextErrorMessage, "error");
+        setErrorMessage(leadDeleteErrorMessage);
+        showToast(leadDeleteErrorMessage, "error");
         setIsDeleting(false);
         return;
       }
@@ -146,8 +144,8 @@ export function LeadDetailForm({ lead }: LeadDetailFormProps) {
       router.replace("/dashboard");
       router.refresh();
     } catch {
-      setErrorMessage("Se produjo un error inesperado al eliminar.");
-      showToast("No se pudo eliminar el lead.", "error");
+      setErrorMessage(leadDeleteErrorMessage);
+      showToast(leadDeleteErrorMessage, "error");
       setIsDeleting(false);
     }
   }

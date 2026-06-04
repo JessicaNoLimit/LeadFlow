@@ -49,6 +49,14 @@ const presupuestoOptions = [
 ];
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const contactSuccessMessage =
+  "Solicitud recibida correctamente. Revisaremos los detalles y nos pondremos en contacto contigo lo antes posible.";
+const contactErrorMessage =
+  "No hemos podido enviar tu solicitud en este momento. Intentalo de nuevo en unos minutos o contacta directamente con el estudio.";
+const requiredFieldsMessage =
+  "Completa los campos obligatorios para poder enviar tu solicitud.";
+const privacyRequiredMessage =
+  "Debes aceptar el tratamiento de datos para enviar tu solicitud.";
 
 function fieldBaseClassName(hasError: boolean) {
   return [
@@ -87,8 +95,7 @@ export function LeadForm() {
     }
 
     if (!privacyAccepted) {
-      nextErrors.privacyAccepted =
-        "Debes aceptar el tratamiento de datos para enviar la solicitud.";
+      nextErrors.privacyAccepted = privacyRequiredMessage;
     }
 
     return nextErrors;
@@ -157,8 +164,8 @@ export function LeadForm() {
 
     if (Object.keys(errors).length > 0) {
       const nextMessage = errors.privacyAccepted
-        ? "Debes aceptar el tratamiento de datos para enviar la solicitud."
-        : "Revisa los campos obligatorios antes de continuar.";
+        ? privacyRequiredMessage
+        : requiredFieldsMessage;
       setSubmissionState({
         status: "error",
         message: nextMessage,
@@ -182,7 +189,7 @@ export function LeadForm() {
       const result = (await response.json()) as { success?: boolean; error?: string };
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error || "No se pudo enviar la solicitud.");
+        throw new Error(contactErrorMessage);
       }
 
       setValues(initialValues);
@@ -190,19 +197,15 @@ export function LeadForm() {
       setTouchedFields({});
       setSubmissionState({
         status: "success",
-        message:
-          "Hemos recibido tu solicitud. El estudio revisara los detalles y contactara contigo proximamente.",
+        message: contactSuccessMessage,
       });
-      showToast(
-        "Hemos recibido tu solicitud. El estudio revisara los detalles y contactara contigo proximamente.",
-        "success",
-      );
+      showToast(contactSuccessMessage, "success");
     } catch {
       setSubmissionState({
         status: "error",
-        message: "No se pudo enviar la solicitud. Intentalo de nuevo en unos minutos.",
+        message: contactErrorMessage,
       });
-      showToast("No se pudo enviar la solicitud. Intentalo de nuevo en unos minutos.", "error");
+      showToast(contactErrorMessage, "error");
     } finally {
       setIsSubmitting(false);
     }

@@ -173,7 +173,7 @@ export default async function ClientesPage() {
               Todavia no hay clientes confirmados.
             </h3>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-mist/72">
-              Los leads apareceran aqui cuando su estado sea aceptado.
+              Todavia no hay clientes confirmados. Los leads aceptados apareceran aqui automaticamente.
             </p>
             <Link
               href="/dashboard/leads"

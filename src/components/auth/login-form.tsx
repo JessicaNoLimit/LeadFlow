@@ -4,7 +4,10 @@ import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createSupabaseBrowserAuthClient } from "@/lib/supabase/browser";
 
-const invalidCredentialsMessage = "Las credenciales no son correctas.";
+const invalidCredentialsMessage =
+  "No hemos podido iniciar sesion con esas credenciales. Revisa el email y la contrasena.";
+const missingCredentialsMessage =
+  "Introduce tu email y contrasena para acceder al CRM.";
 
 export function LoginForm() {
   const router = useRouter();
@@ -21,6 +24,12 @@ export function LoginForm() {
     }
 
     setError(null);
+
+    if (!email.trim() || !password) {
+      setError(missingCredentialsMessage);
+      return;
+    }
+
     setIsSubmitting(true);
 
     const supabase = createSupabaseBrowserAuthClient();
@@ -42,7 +51,7 @@ export function LoginForm() {
   }
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit}>
+    <form className="space-y-5" onSubmit={handleSubmit} noValidate>
       <div>
         <label
           className="mb-2 block text-[0.68rem] uppercase tracking-[0.26em] text-mist/72"
