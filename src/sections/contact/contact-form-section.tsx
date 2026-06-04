@@ -1,5 +1,7 @@
+import Image from "next/image";
 import { LeadForm } from "@/components/forms/lead-form";
 import { Container } from "@/components/ui/container";
+import coupleImage from "@/images/pareja.png";
 
 type ContactFormSectionProps = {
   className?: string;
@@ -36,6 +38,16 @@ export function ContactFormSection({
                   y encargos visuales con sensibilidad contemporanea.
                 </p>
               </div>
+              <figure className="mt-5 relative aspect-[16/10] overflow-hidden rounded-[1.75rem] border border-white/8 bg-black/20 shadow-[0_22px_60px_rgba(0,0,0,0.22)]">
+                <Image
+                  src={coupleImage}
+                  alt="Reportaje de pareja como referencia visual para solicitudes de propuesta"
+                  fill
+                  sizes="(min-width: 1024px) 32vw, 100vw"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/48 via-transparent to-transparent" />
+              </figure>
             </div>
 
             <div className="rounded-[1.9rem] border border-white/10 bg-black/16 p-6 sm:p-8">

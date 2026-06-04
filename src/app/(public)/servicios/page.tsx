@@ -7,7 +7,7 @@ export default function ServiciosPage() {
       <PageIntro
         eyebrow="Servicios"
         title="Encargos visuales pensados para proyectos personales, marcas y celebraciones."
-        description="Cada servicio se plantea con una mirada editorial y una ejecucion serena. La pagina queda preparada para evolucionar con detalle, casos reales y futuras propuestas de valor."
+        description="Cada servicio se plantea con una mirada editorial y una ejecucion serena para cuidar tanto la narrativa visual como la experiencia del encargo."
       />
       <ServicesOverview />
     </>

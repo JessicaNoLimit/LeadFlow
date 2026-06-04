@@ -6,8 +6,8 @@ export default function PortfolioPage() {
     <>
       <PageIntro
         eyebrow="Portfolio"
-        title="Un archivo visual preparado para fotografias reales, grandes y precisas."
-        description="Esta seccion queda lista para incorporar imagenes finales desde public/images/portfolio sin rehacer la composicion. La direccion visual mantiene un tono sobrio, espacioso y editorial."
+        title="Un archivo visual de retratos, celebraciones y encargos comerciales."
+        description="Una seleccion de imagenes construida desde la calma, la direccion de luz y una composicion editorial precisa."
       />
       <PortfolioShowcase />
     </>
