@@ -8,6 +8,8 @@ type LorenzoContactValues = {
   telefono: string;
   tipo_sesion: string;
   fecha_evento: string;
+  ubicacion: string;
+  presupuesto: string;
   mensaje: string;
 };
 
@@ -22,8 +24,28 @@ const initialValues: LorenzoContactValues = {
   telefono: "",
   tipo_sesion: "",
   fecha_evento: "",
+  ubicacion: "",
+  presupuesto: "",
   mensaje: "",
 };
+
+const tipoSesionOptions = [
+  "Boda editorial",
+  "Retrato editorial",
+  "Marca personal",
+  "Evento privado",
+  "Fotografia de producto",
+  "Sesion lifestyle",
+  "Otro",
+];
+
+const presupuestoOptions = [
+  "Menos de 500 EUR",
+  "500 EUR - 1.000 EUR",
+  "1.000 EUR - 2.500 EUR",
+  "Mas de 2.500 EUR",
+  "Prefiero recibir orientacion",
+];
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const contactSuccessMessage =
@@ -32,14 +54,34 @@ const contactErrorMessage =
   "No hemos podido enviar tu solicitud en este momento. Intentalo de nuevo en unos minutos o contacta directamente con el estudio.";
 const requiredFieldsMessage =
   "Completa los campos obligatorios para poder enviar tu solicitud.";
+const privacyRequiredMessage =
+  "Debes aceptar el tratamiento de datos para enviar tu solicitud.";
+
+function fieldClassName(hasError = false) {
+  return [
+    "w-full min-w-0 border-b bg-transparent py-4 text-stone-900 outline-none transition",
+    "placeholder:text-stone-300 disabled:cursor-not-allowed disabled:opacity-60",
+    hasError ? "border-[#9f4f42] focus:border-[#9f4f42]" : "border-stone-200 focus:border-stone-900",
+  ].join(" ");
+}
+
+function selectClassName(hasError = false) {
+  return [
+    "w-full min-w-0 border-b bg-transparent py-4 text-stone-500 outline-none transition",
+    "disabled:cursor-not-allowed disabled:opacity-60",
+    hasError ? "border-[#9f4f42] focus:border-[#9f4f42]" : "border-stone-200 focus:border-stone-900",
+  ].join(" ");
+}
 
 export function LorenzoContact() {
   const [values, setValues] = useState(initialValues);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionState, setSubmissionState] = useState<SubmissionState>({
     status: "idle",
     message: "",
   });
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
 
   function handleChange(
     event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -53,6 +95,26 @@ export function LorenzoContact() {
     setSubmissionState({ status: "idle", message: "" });
   }
 
+  function handleBlur(
+    event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+  ) {
+    const { name } = event.target;
+
+    setTouchedFields((currentFields) => ({
+      ...currentFields,
+      [name]: true,
+    }));
+  }
+
+  function handlePrivacyChange(event: ChangeEvent<HTMLInputElement>) {
+    setPrivacyAccepted(event.target.checked);
+    setTouchedFields((currentFields) => ({
+      ...currentFields,
+      privacyAccepted: true,
+    }));
+    setSubmissionState({ status: "idle", message: "" });
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isSubmitting) {
@@ -62,11 +124,28 @@ export function LorenzoContact() {
     const nombre = values.nombre.trim();
     const email = values.email.trim();
     const tipoSesion = values.tipo_sesion.trim();
+    const hasRequiredFields = nombre && emailPattern.test(email) && tipoSesion;
 
-    if (!nombre || !emailPattern.test(email) || !tipoSesion) {
+    setTouchedFields((currentFields) => ({
+      ...currentFields,
+      nombre: true,
+      email: true,
+      tipo_sesion: true,
+      privacyAccepted: true,
+    }));
+
+    if (!hasRequiredFields) {
       setSubmissionState({
         status: "error",
         message: requiredFieldsMessage,
+      });
+      return;
+    }
+
+    if (!privacyAccepted) {
+      setSubmissionState({
+        status: "error",
+        message: privacyRequiredMessage,
       });
       return;
     }
@@ -83,12 +162,12 @@ export function LorenzoContact() {
         body: JSON.stringify({
           nombre,
           email,
-          telefono: values.telefono,
+          telefono: values.telefono.trim(),
           tipo_sesion: tipoSesion,
           fecha_evento: values.fecha_evento,
-          ubicacion: "",
-          presupuesto: "",
-          mensaje: values.mensaje,
+          ubicacion: values.ubicacion.trim(),
+          presupuesto: values.presupuesto,
+          mensaje: values.mensaje.trim(),
         }),
       });
 
@@ -99,6 +178,8 @@ export function LorenzoContact() {
       }
 
       setValues(initialValues);
+      setPrivacyAccepted(false);
+      setTouchedFields({});
       setSubmissionState({
         status: "success",
         message: contactSuccessMessage,
@@ -139,7 +220,12 @@ export function LorenzoContact() {
           data-reveal
           className="translate-y-8 opacity-0 transition duration-1000 ease-out [transition-delay:200ms]"
         >
-          <form className="space-y-8" aria-label="Formulario visual de contacto" onSubmit={handleSubmit}>
+          <form
+            className="space-y-8"
+            aria-label="Formulario de contacto"
+            onSubmit={handleSubmit}
+            noValidate
+          >
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
               <input
                 name="nombre"
@@ -147,8 +233,11 @@ export function LorenzoContact() {
                 placeholder="Nombre"
                 value={values.nombre}
                 onChange={handleChange}
-                className="w-full border-b border-stone-200 bg-transparent py-4 text-stone-900 outline-none transition placeholder:text-stone-300 focus:border-stone-900"
+                onBlur={handleBlur}
+                className={fieldClassName(touchedFields.nombre && !values.nombre.trim())}
                 disabled={isSubmitting}
+                autoComplete="name"
+                aria-invalid={Boolean(touchedFields.nombre && !values.nombre.trim())}
               />
               <input
                 name="email"
@@ -156,8 +245,17 @@ export function LorenzoContact() {
                 placeholder="Email"
                 value={values.email}
                 onChange={handleChange}
-                className="w-full border-b border-stone-200 bg-transparent py-4 text-stone-900 outline-none transition placeholder:text-stone-300 focus:border-stone-900"
+                onBlur={handleBlur}
+                className={fieldClassName(
+                  touchedFields.email &&
+                    (!values.email.trim() || !emailPattern.test(values.email.trim())),
+                )}
                 disabled={isSubmitting}
+                autoComplete="email"
+                aria-invalid={Boolean(
+                  touchedFields.email &&
+                    (!values.email.trim() || !emailPattern.test(values.email.trim())),
+                )}
               />
             </div>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
@@ -167,46 +265,107 @@ export function LorenzoContact() {
                 placeholder="Telefono"
                 value={values.telefono}
                 onChange={handleChange}
-                className="w-full border-b border-stone-200 bg-transparent py-4 text-stone-900 outline-none transition placeholder:text-stone-300 focus:border-stone-900"
+                onBlur={handleBlur}
+                className={fieldClassName()}
                 disabled={isSubmitting}
+                autoComplete="tel"
               />
               <select
                 name="tipo_sesion"
                 value={values.tipo_sesion}
                 onChange={handleChange}
-                className="w-full border-b border-stone-200 bg-transparent py-4 text-stone-400 outline-none transition focus:border-stone-900"
+                onBlur={handleBlur}
+                className={selectClassName(touchedFields.tipo_sesion && !values.tipo_sesion.trim())}
                 disabled={isSubmitting}
+                aria-invalid={Boolean(touchedFields.tipo_sesion && !values.tipo_sesion.trim())}
               >
                 <option value="" disabled>
-                  Tipo de Sesion
+                  Tipo de sesion
                 </option>
-                <option value="editorial">Retrato Editorial</option>
-                <option value="boda">Boda Exclusiva</option>
-                <option value="marca">Marca Personal</option>
+                {tipoSesionOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
             </div>
-            <input
-              name="fecha_evento"
-              type="date"
-              aria-label="Fecha aproximada"
-              value={values.fecha_evento}
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+              <input
+                name="fecha_evento"
+                type="date"
+                aria-label="Fecha aproximada"
+                value={values.fecha_evento}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={selectClassName()}
+                disabled={isSubmitting}
+              />
+              <input
+                name="ubicacion"
+                type="text"
+                placeholder="Ubicacion"
+                value={values.ubicacion}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={fieldClassName()}
+                disabled={isSubmitting}
+              />
+            </div>
+            <select
+              name="presupuesto"
+              value={values.presupuesto}
               onChange={handleChange}
-              className="w-full border-b border-stone-200 bg-transparent py-4 text-stone-400 outline-none transition focus:border-stone-900"
+              onBlur={handleBlur}
+              className={selectClassName()}
               disabled={isSubmitting}
-            />
+            >
+              <option value="">Presupuesto orientativo</option>
+              {presupuestoOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
             <textarea
               name="mensaje"
               rows={4}
               placeholder="Hablanos de tu proyecto..."
               value={values.mensaje}
               onChange={handleChange}
-              className="w-full resize-none border-b border-stone-200 bg-transparent py-4 text-stone-900 outline-none transition placeholder:text-stone-300 focus:border-stone-900"
+              onBlur={handleBlur}
+              className={`${fieldClassName()} resize-none`}
               disabled={isSubmitting}
             />
+            <div className="border border-stone-200 px-5 py-5">
+              <label
+                htmlFor="lorenzoPrivacyAccepted"
+                className="flex cursor-pointer items-start gap-4 text-sm leading-7 text-stone-600"
+              >
+                <input
+                  id="lorenzoPrivacyAccepted"
+                  name="privacyAccepted"
+                  type="checkbox"
+                  checked={privacyAccepted}
+                  onChange={handlePrivacyChange}
+                  className="mt-1 h-4 w-4 shrink-0 accent-stone-950"
+                  disabled={isSubmitting}
+                  aria-describedby="lorenzoPrivacyHelp"
+                  aria-invalid={Boolean(touchedFields.privacyAccepted && !privacyAccepted)}
+                />
+                <span>
+                  <span className="block text-stone-700">
+                    He leido y acepto el tratamiento de mis datos para que Lorenzo Bellucci Studio pueda responder a mi solicitud.
+                  </span>
+                  <span id="lorenzoPrivacyHelp" className="mt-2 block text-stone-400">
+                    Usaremos tus datos unicamente para gestionar esta consulta y responderte sobre la sesion solicitada.
+                  </span>
+                </span>
+              </label>
+            </div>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-stone-950 py-5 text-xs uppercase tracking-[0.3em] text-white transition duration-500 hover:bg-stone-800"
+              className="w-full bg-stone-950 py-5 text-xs uppercase tracking-[0.3em] text-white transition duration-500 hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isSubmitting ? "Enviando solicitud..." : "Enviar Solicitud"}
             </button>
