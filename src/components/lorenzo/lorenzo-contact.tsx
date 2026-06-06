@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useState } from "react";
+import { studioContact } from "@/lib/studio";
 
 type LorenzoContactValues = {
   nombre: string;
@@ -210,8 +211,8 @@ export function LorenzoContact() {
           </p>
 
           <div className="space-y-6 text-sm uppercase tracking-[0.2em] text-stone-400">
-            <p>studio@lorenzobellucci.com</p>
-            <p>+34 691 847 253</p>
+            <p>{studioContact.email}</p>
+            <p>{studioContact.phone}</p>
             <p>MILÁN | FLORENCIA | LONDRES</p>
           </div>
         </div>

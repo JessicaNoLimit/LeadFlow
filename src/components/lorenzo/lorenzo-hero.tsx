@@ -38,13 +38,13 @@ export function LorenzoHero() {
         >
           <a
             href="#portfolio"
-            className="inline-flex min-h-12 items-center justify-center border border-white/90 bg-white/[0.06] px-7 text-xs uppercase tracking-[0.2em] text-[#f4efe8] transition duration-500 hover:bg-white hover:text-stone-900 sm:min-h-14 sm:px-10 sm:text-sm sm:tracking-[0.24em]"
+            className="inline-flex min-h-12 items-center justify-center rounded-sm border border-white bg-white px-7 text-xs uppercase tracking-[0.2em] text-stone-950 transition duration-500 hover:border-[#f4efe8] hover:bg-[#f4efe8] sm:min-h-14 sm:px-10 sm:text-sm sm:tracking-[0.24em]"
           >
             Ver Portfolio
           </a>
           <a
             href="#contacto"
-            className="inline-flex min-h-12 items-center justify-center border border-[#d7c6a8] bg-[#d7c6a8] px-7 text-xs font-semibold uppercase tracking-[0.2em] text-stone-950 transition duration-500 hover:bg-transparent hover:text-[#d7c6a8] sm:min-h-14 sm:px-10 sm:text-sm sm:tracking-[0.24em]"
+            className="inline-flex min-h-12 items-center justify-center rounded-sm border border-[#d7c6a8] bg-[#d7c6a8] px-7 text-xs uppercase tracking-[0.2em] text-stone-950 transition duration-500 hover:border-[#c9b58f] hover:bg-[#c9b58f] sm:min-h-14 sm:px-10 sm:text-sm sm:tracking-[0.24em]"
           >
             Reservar Experiencia
           </a>

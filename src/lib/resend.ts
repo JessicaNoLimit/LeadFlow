@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { calculateIncludedVat, formatCurrencyEs } from "@/lib/pricing";
+import { studioContact } from "@/lib/studio";
 
 type SendPresupuestoEmailInput = {
   clientEmail: string;
@@ -92,7 +93,7 @@ export async function sendPresupuestoEmail({
             ${availabilityMessage}
           </p>
           <p style="margin:16px 0 0;font-size:15px;line-height:1.8;color:#d8d1c7;">
-            Puedes responder directamente a este correo o contactar con el estudio en el 666 555 444, de lunes a viernes, de 9:00 a 17:00.
+            Puedes responder directamente a este correo o contactar con el estudio en el ${studioContact.phone}, de lunes a viernes, de 9:00 a 17:00.
           </p>
           <p style="margin:24px 0 0;font-size:15px;line-height:1.8;color:#f4efe7;">
             Lorenzo Bellucci Studio
