@@ -225,7 +225,7 @@ export function PresupuestoDetailForm({
             disabled={!canSendEmail || isSaving || isSending}
             className="inline-flex h-12 items-center justify-center rounded-2xl border border-sand/18 bg-sand/[0.08] px-5 text-[0.72rem] uppercase tracking-[0.22em] text-sand transition hover:border-sand/36 hover:bg-sand/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand/50 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSending ? "Enviando propuesta..." : "Enviar presupuesto"}
+            {isSending ? "Enviando propuesta..." : "Enviar propuesta por email"}
           </button>
           {!canSendEmail ? (
             <p className="text-sm leading-7 text-mist/72">
@@ -292,6 +292,9 @@ export function PresupuestoDetailForm({
               className={fieldClassName}
               disabled={isSaving || isSending}
             />
+            <p className="mt-2 text-xs leading-6 text-mist/60">
+              Importe final con IVA incluido al 21%.
+            </p>
           </div>
 
           <div>
@@ -309,9 +312,6 @@ export function PresupuestoDetailForm({
               className={fieldClassName}
               disabled={isSaving || isSending}
             />
-            <p className="mt-2 text-xs leading-6 text-mist/60">
-              Importe final con IVA incluido al 21%.
-            </p>
           </div>
 
           <div>
@@ -347,6 +347,9 @@ export function PresupuestoDetailForm({
       </div>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
+        <p className="text-xs leading-6 text-mist/60 sm:col-span-3">
+          Usa las acciones de marcado manual solo si la propuesta se gestiono por otro canal.
+        </p>
         <button
           type="button"
           onClick={() => handleQuickStatusChange("enviado")}
