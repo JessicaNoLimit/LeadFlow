@@ -1,11 +1,13 @@
+import { studioContact } from "@/lib/studio";
+
 type BadgeTone = "success" | "neutral" | "sand";
 
 const studioData = [
-  { label: "Nombre comercial", value: "Lorenzo Bellucci Studio" },
-  { label: "Email de contacto", value: "contacto@lorenzobellucci.com" },
-  { label: "Telefono", value: "666 555 444" },
+  { label: "Nombre comercial", value: studioContact.name },
+  { label: "Email de contacto", value: studioContact.email },
+  { label: "Telefono", value: studioContact.phone },
   { label: "Horario de atencion", value: "L-V · 9:00 a 17:00" },
-  { label: "Web", value: "www.lorenzobellucci.com" },
+  { label: "Web", value: studioContact.website },
   { label: "Direccion", value: "Disponible bajo cita previa" },
 ] as const;
 
