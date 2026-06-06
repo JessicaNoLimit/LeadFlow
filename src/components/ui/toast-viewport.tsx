@@ -14,10 +14,19 @@ const toneClassNames = {
 } as const;
 
 export function ToastViewport() {
-  const [toasts, setToasts] = useState<Toast[]>(() => {
-    const persistedToast = consumePersistedToast();
-    return persistedToast ? [persistedToast] : [];
-  });
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const persistedToast = consumePersistedToast();
+
+      if (persistedToast) {
+        setToasts([persistedToast]);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     return subscribeToToasts((toast) => {

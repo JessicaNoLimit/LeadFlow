@@ -36,8 +36,8 @@ const statusLabels: Record<string, string> = {
 
 const leadStatusOptions = [
   "nuevo",
-  "presupuesto_enviado",
   "contactado",
+  "presupuesto_enviado",
   "aceptado",
   "rechazado",
   "archivado",

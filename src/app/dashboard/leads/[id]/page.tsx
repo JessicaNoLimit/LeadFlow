@@ -20,8 +20,8 @@ type LeadDetailPageProps = {
 
 const commercialFlowSteps = [
   { key: "nuevo", label: "Nuevo" },
-  { key: "presupuesto_enviado", label: "Presupuesto enviado" },
   { key: "contactado", label: "Contactado" },
+  { key: "presupuesto_enviado", label: "Presupuesto enviado" },
   { key: "aceptado", label: "Aceptado" },
   { key: "rechazado", label: "Rechazado" },
 ] as const;
